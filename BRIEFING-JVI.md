@@ -140,6 +140,10 @@ move para `assets/img/galeria/`. Não comitear ficheiros gigantes.
 
 ---
 
+> **Fase 10 (actual):** o redesenho pedido pelo cliente está em
+> `BRIEFING-FASE10-REDESIGN.md`. Prevalece sobre a sugestão de 6-8 páginas acima:
+> agora são no máximo 5.
+
 ## Como trabalhar
 
 1. Usa os agentes disponíveis em `.opencode/agents/` (107 instalados: engineering, design,
