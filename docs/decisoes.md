@@ -912,3 +912,32 @@ declarados outra vez); os diálogos, que estão fora das secções, ficam escuro
 | Altura do hero ≤ 720 px (`min(100svh, 720px)`) | Scroll curto: o Início inteiro mede 1 313 px a 1440 px de largura (era ~4 600). |
 | Abaixo de **900 px** o mapa passa para baixo do texto (era 760 px) | Medido a 768 px: o mapa fica a 66% da largura do hero e o título passava por cima das províncias. O limite é o mesmo em `css/styles.css`, `js/hero-voo.js` (`w < 900`, 4 sítios) e `js/main.js`; `tests/fase10.test.js` confere. |
 | Os três serviços são `Transporte aéreo`, `Transporte rodoviário` e `Recolha e entrega`, uma linha cada, com um só link "Ver os serviços" | O brief pede "3 serviços em resumo (uma linha cada, link para Serviços) e mais nada". "Outras províncias" e "Soluções integradas" eram o mesmo conteúdo reescrito. |
+
+### D49 — Sobre nós: empresa, credenciais e galeria de 6 fotografias (10.4)
+
+O brief mandou escolher as 6 melhores das 11 e registar quais. Critério: mostrar
+**o trabalho** (carga, embalagem, destinos) e a **marca**, e não mostrar números
+ou valores que a JVI já disse que estão errados.
+
+| Fica (6) | Porquê |
+|---|---|
+| `img_9a5743b57c0e` — camisetas amarelas para Zambézia | A mais forte: caixa de camião cheia, com o destino escrito nas caixas. |
+| `img_78498ba3732e` — destino Nampula | Segunda província, em paisagem; mostra a etiquetagem. |
+| `img_3fcdb0c13597` — camião amarrado, pronto a sair | A carga pronta a partir. |
+| `img_7296cfa7277f` — caixote selado com fita da JVI | A marca na embalagem. |
+| `img_ac351fd019f4` — TVs ULTRAK reforçadas com madeira | Mostra o cuidado com mercadoria frágil. |
+| `img_700cc775e008` — placa da JVI | A identidade da empresa. |
+
+| Sai (5) | Porquê |
+|---|---|
+| `img_5e0f0d40bd0b` — Airwaybill 003871 | Tem impresso **IVA 17%** e contactos antigos; o IVA do site é 16% e o único número válido é outro. Era a "dúvida que fica" do D42. |
+| `img_014b85241586` — poster do terminal, Porta 27 | Traz impressos números de telefone que já não são os da empresa. |
+| `img_492cc8a760cc` — motociclo embalado | Repete "embalagem" (já há duas) e é a mais estreita do carrossel. |
+| `img_d544eaf40b51` — caixotes num reboque | Quase igual ao caixote selado. |
+| `img_06fa9ae40417` — tintas PLASCON | Marca de terceiros sem ligação à JVI na própria imagem. |
+
+Os ficheiros das cinco que saem continuam em `assets/img/galeria/` (não se
+apagou nada; ficam fora das páginas). O carrossel, a luzbox e o contador
+(`1 / 6`) são os de sempre — `iniciarGaleria` e `iniciarCarrossel` não mudaram.
+A carta de apresentação passou a **botão-link para o PDF** (já não a capa em
+grande), como o brief permite.
