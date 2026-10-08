@@ -730,6 +730,17 @@ export function iniciarVoo(canvas, opcoes = {}) {
       desenharAgencias();
       desenharSetas(chegada);
       desenharRota(chegada);
+      /* O avião também aparece sem animação: parado à saída de Maputo, a
+         apontar para o primeiro destino. Quem tem "reduzir movimento" ligado
+         (no Android é "remover animações") ficava com o mapa e sem avião:
+         é uma das duas causas de o avião "não aparecer no telemóvel"
+         (Fase 10, 10.6; a outra era o mapa estar fora do primeiro ecrã). */
+      const primeiro = saltos[0];
+      if (primeiro) {
+        const de = em(primeiro, 0.1);
+        const para = em(primeiro, 0.14);
+        desenharAviao(de.x, de.y, Math.atan2(para.y - de.y, para.x - de.x), w < 900 ? 15 : 24);
+      }
       aoProgredir(1);
     };
     requestAnimationFrame(estatico);

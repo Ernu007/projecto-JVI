@@ -529,7 +529,7 @@ test('9.2: o loop infinito só pede frames enquanto o hero está no ecrã', () =
   assert.match(frame, /decorrido \+= passoDoRelogio\(ultimo, agora\)/);
 });
 
-test('9.2: com prefers-reduced-motion não há voo nenhum', () => {
+test('9.2 + 10.6: com prefers-reduced-motion não há voo, mas o avião aparece parado', () => {
   const fonte = codigoDe('js/hero-voo.js');
   const arranque = fonte.slice(fonte.indexOf('if (reduzir) {', fonte.indexOf('montar();')));
   assert.ok(arranque.startsWith('if (reduzir) {'), 'não encontrei o ramo de movimento reduzido');
@@ -537,7 +537,11 @@ test('9.2: com prefers-reduced-motion não há voo nenhum', () => {
   assert.match(ramo, /return \(\) => \{\};/, 'o ramo de movimento reduzido não sai antes do ciclo');
   assert.doesNotMatch(ramo, /requestAnimationFrame\(frame\)/,
     'com movimento reduzido o loop arranca na mesma');
-  assert.doesNotMatch(ramo, /desenharAviao/, 'com movimento reduzido não há avião a meio do percurso');
+  /* Fase 10 (10.6): no Android "remover animações" liga o reduced-motion, e o
+     cliente ficava sem avião nenhum. Sem animação, o avião desenha-se uma vez,
+     parado à saída de Maputo, dentro do frame estático. */
+  const estatico = ramo.slice(ramo.indexOf('const estatico'), ramo.indexOf('requestAnimationFrame(estatico)'));
+  assert.match(estatico, /desenharAviao\(/, 'com movimento reduzido o avião desaparece');
 });
 
 test('9.2: depois da primeira ida o fundo do mapa é pintado uma vez, não a cada frame', () => {

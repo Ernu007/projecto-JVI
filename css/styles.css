@@ -348,8 +348,11 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
    sua caixa, em fluxo, por baixo do conteúdo. O limite é o do `w < 760` do
    js/hero-voo.js — o teste confere que são o mesmo. */
 @media (max-width: 899px) {
-  .hero { flex-direction: column; align-items: stretch; padding-bottom: 0; min-height: 0; }
-  .hero__fundo { position: relative; inset: auto; order: 2; height: min(110vw, 440px); margin-top: 8px; }
+  .hero { flex-direction: column; align-items: stretch; padding: 100px 0 0; min-height: 0; }
+  .hero__lead { margin-bottom: 20px; }
+  /* O mapa (e o avião) têm de caber no primeiro ecrã: o voo só arranca com o
+     mapa à vista (IntersectionObserver), e a 360 x 800 isto põe-no em y 447-778. */
+  .hero__fundo { position: relative; inset: auto; order: 2; height: min(92vw, 380px); margin-top: 8px; }
   .hero__glow::after { background: none; }
 }
 
