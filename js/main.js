@@ -102,7 +102,7 @@ function iniciarHero() {
      pode ficar desfocado à espera de um avião que não está à vista: acende
      logo, e o voo deixa de lhe mexer. O limite é o do CSS (`.hero__fundo`
      em fluxo abaixo de 760px). */
-  const mapaAbaixo = window.matchMedia('(max-width: 759px)').matches;
+  const mapaAbaixo = window.matchMedia('(max-width: 899px)').matches;
   if (mapaAbaixo) reporTitulo();
 
   requestAnimationFrame(() => {

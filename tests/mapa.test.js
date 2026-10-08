@@ -685,7 +685,7 @@ test('9.2: a seta de cada salto tem tamanho de seta, e não o da escala do mapa'
      se viu porque estavam fora do canvas, com o avião. */
   const fonte = codigoDe('js/hero-voo.js');
   const seta = /function desenharSeta\(s, estado\) \{([\s\S]*?)\n  \}/.exec(fonte)?.[1] ?? '';
-  const m = /const r = w < 760 \? ([\d.]+) : ([\d.]+);/.exec(seta);
+  const m = /const r = w < 900 \? ([\d.]+) : ([\d.]+);/.exec(seta);
   assert.ok(m, 'o raio da seta voltou a depender de outra coisa que não a largura do ecrã');
   assert.ok(Number(m[1]) >= 3 && Number(m[1]) <= Number(m[2]) && Number(m[2]) <= 8,
     `raio da seta: ${m[1]} px no telemóvel, ${m[2]} px no computador`);
@@ -716,7 +716,7 @@ test('9.8: no telemóvel o título não fica à espera de um avião que não est
      lá o título ficava desfocado — 14 s, até à rede de segurança. */
   const fonte = codigoDe('js/main.js');
   const hero = /function iniciarHero\(\) \{([\s\S]*?)\n\}/.exec(fonte)?.[1] ?? '';
-  assert.match(hero, /matchMedia\('\(max-width: 759px\)'\)/, 'o hero não distingue o telemóvel');
+  assert.match(hero, /matchMedia\('\(max-width: 899px\)'\)/, 'o hero não distingue o telemóvel');
   assert.match(hero, /if \(mapaAbaixo\) reporTitulo\(\);/, 'no telemóvel o título continua preso ao voo');
   assert.match(hero, /aoProgredir\(prog\) \{\s*if \(mapaAbaixo\) return;/,
     'no telemóvel o voo volta a apagar o título quando arranca');

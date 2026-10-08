@@ -902,3 +902,13 @@ saem as cores do Google nos botões fixos e os degradês. As secções do corpo
 vestem o tema claro por `.seccao` re-declarando os tokens derivados (custom
 properties resolvem-se onde se declaram, por isso `--linha` & afins têm de ser
 declarados outra vez); os diálogos, que estão fora das secções, ficam escuros.
+
+### D48 — Início: hero curto, WhatsApp em destaque, três serviços (10.3)
+
+| Decisão | Razão |
+|---|---|
+| O hero tem título, **uma** linha, o botão do WhatsApp (`btn--wa btn--grande`, largo) e por baixo o do orçamento em contorno | "Botões do WhatsApp em destaque" (pedido 6 do cliente; a frase da "ponte de madeira" ficou ignorada, como o Ernu mandou). O orçamento deixou de ser a acção primária do hero: nesta fase é o WhatsApp. |
+| Saíram do hero a etiqueta "Licenciada · De Rovuma ao Maputo", o parágrafo longo com "10 anos", as três provas, o percurso, o "Como chegar à JVI" e a indicação "Deslize" | Pedido explícito ("SEM provas") e "cada informação uma só vez". "Como chegar" e o percurso vivem em Contactos. |
+| Altura do hero ≤ 720 px (`min(100svh, 720px)`) | Scroll curto: o Início inteiro mede 1 313 px a 1440 px de largura (era ~4 600). |
+| Abaixo de **900 px** o mapa passa para baixo do texto (era 760 px) | Medido a 768 px: o mapa fica a 66% da largura do hero e o título passava por cima das províncias. O limite é o mesmo em `css/styles.css`, `js/hero-voo.js` (`w < 900`, 4 sítios) e `js/main.js`; `tests/fase10.test.js` confere. |
+| Os três serviços são `Transporte aéreo`, `Transporte rodoviário` e `Recolha e entrega`, uma linha cada, com um só link "Ver os serviços" | O brief pede "3 serviços em resumo (uma linha cada, link para Serviços) e mais nada". "Outras províncias" e "Soluções integradas" eram o mesmo conteúdo reescrito. |

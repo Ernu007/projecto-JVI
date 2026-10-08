@@ -152,11 +152,11 @@ export function iniciarVoo(canvas, opcoes = {}) {
     /* No telemóvel o canvas é uma caixa só do mapa, por baixo do conteúdo
        (Fase 9, 9.8): o país enche-a, em vez de ficar pequeno dentro das
        margens que fazia sentido deixar quando estava por trás do texto. */
-    const areaW = w < 760 ? w * 0.88 : w * FRAÇÃO_LARGURA;
-    const areaH = w < 760 ? h * 0.94 : h * 0.82;
+    const areaW = w < 900 ? w * 0.88 : w * FRAÇÃO_LARGURA;
+    const areaH = w < 900 ? h * 0.94 : h * 0.82;
     esc = Math.min(areaW / larg, areaH / alt);
     // ox/oy sao o canto superior esquerdo do pais no ecra, para ficar centrado
-    ox = (w < 760 ? w * 0.5 : w * 0.66) - (larg * esc) / 2;
+    ox = (w < 900 ? w * 0.5 : w * 0.66) - (larg * esc) / 2;
     oy = h * 0.5 - (alt * esc) / 2;
   }
 
@@ -400,7 +400,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
     const ang = Math.atan2(p.y - antes.y, p.x - antes.x);
     /* Um tamanho de seta, em píxeis. Era `4 + 2 * esc`, e `esc` são os
        píxeis por grau do mapa: dava setas de 90 px. */
-    const r = w < 760 ? 4.5 : 6;
+    const r = w < 900 ? 4.5 : 6;
     const feita = ida ? estado.pos >= s.t1 : estado.pos <= s.t0;
     const viva = ida ? estado.pos >= s.t0 : estado.pos <= s.t1;
 
@@ -685,7 +685,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
       const d0 = em(salto, Math.max(0, dentro - 0.02));
       const d1 = em(salto, Math.min(1, dentro + 0.02));
       const tangente = Math.atan2(d1.y - d0.y, d1.x - d0.x);
-      const tam = (w < 760 ? 15 : 24);
+      const tam = (w < 900 ? 15 : 24);
       desenharRastro(idx, estado.sentido);
       desenharAviao(p.x, p.y, rumoDoAviao(tangente, estado), tam);
     }

@@ -194,3 +194,18 @@ test('10.4: Sobre nós tem a galeria de seis fotografias, sem as que mostram nú
   assert.match(sobre, /data-gal-contador[^>]*>1 \/ 6</);
   assert.match(sobre, /id="luz"/);
 });
+
+test('10.3: o hero é curto — nunca mais alto do que 720 px — e o telemóvel começa abaixo de 900 px', () => {
+  const css = fs.readFileSync('css/styles.css', 'utf8');
+  const hero = /\.hero\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert.match(hero, /min-height:\s*min\(100svh,\s*720px\)/, 'o hero deixou de ter o tecto de 720 px');
+  assert.doesNotMatch(hero, /min-height:\s*100svh\s*;/, 'o hero voltou a ocupar o ecrã inteiro');
+
+  /* Entre 760 e 899 px o texto e o mapa sobrepunham-se (o mapa fica a 66% da
+     largura): o hero passa a coluna abaixo de 900 px, em CSS, no JS do voo e
+     no JS do título — os três têm de ser o mesmo número. */
+  assert.match(css, /@media \(max-width: 899px\) \{\s*\.hero \{/);
+  const voo = fs.readFileSync('js/hero-voo.js', 'utf8');
+  assert.deepEqual([...new Set([...voo.matchAll(/w < (\d+)/g)].map((m) => m[1]))], ['900']);
+  assert.match(fs.readFileSync('js/main.js', 'utf8'), /matchMedia\('\(max-width: 899px\)'\)/);
+});

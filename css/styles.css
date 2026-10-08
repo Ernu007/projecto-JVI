@@ -347,7 +347,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 /* No telemóvel o mapa sai de trás do texto: abaixo de 760px passa a ter a
    sua caixa, em fluxo, por baixo do conteúdo. O limite é o do `w < 760` do
    js/hero-voo.js — o teste confere que são o mesmo. */
-@media (max-width: 759px) {
+@media (max-width: 899px) {
   .hero { flex-direction: column; align-items: stretch; padding-bottom: 0; min-height: 0; }
   .hero__fundo { position: relative; inset: auto; order: 2; height: min(110vw, 440px); margin-top: 8px; }
   .hero__glow::after { background: none; }
