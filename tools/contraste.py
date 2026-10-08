@@ -12,14 +12,17 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 CSS = RAIZ / "css" / "styles.css"
 
-# Fundos reais, incluindo os gradientes das seções e do hero.
+# Fundos reais. Fase 10 (10.1): preto no cabeçalho, hero e rodapé; claro no corpo.
 FUNDOS = {
-    "base": "#0F172A",
-    "base-2": "#131E33",
-    "base-3": "#1B2740",
-    "rodape": "#0B1220",
-    "card": "#1B2740",     # gradiente do truck, com padding
-    "branco-fraco": "#1A1A1A",  # o pior caso: rgba(255,255,255,0.05) sobre base
+    "base": "#0B0B0C",
+    "base-2": "#151516",
+    "base-3": "#1C1C1E",
+    "rodape": "#060607",
+}
+# Tema claro (secções do corpo)
+FUNDOS_CLAROS = {
+    "c-fundo": "#FFFFFF",
+    "c-fundo-2": "#F7F8FA",
 }
 
 
@@ -93,28 +96,30 @@ TEXTOS = {
     "texto-fraco": token("--texto-fraco"),
     "claro": token("--claro"),
     "verde": token("--verde"),
-    "verde-escuro": token("--verde-escuro"),
-    "laranja": token("--laranja"),
     "wa": token("--wa"),
 }
+TEXTOS_CLAROS = {
+    "c-texto": token("--c-texto"),
+    "c-texto-suave": token("--c-texto-suave"),
+    "c-texto-fraco": token("--c-texto-fraco"),
+    "c-verde": token("--c-verde"),
+}
 
-# Fase 9 (9.6): texto escuro sobre os botões de cor sólida. O WhatsApp do
-# hero passou a verde (`--wa`), e nenhum destes pares estava medido.
+# Texto escuro sobre os botões de cor sólida (o verde da marca e o do WhatsApp).
 BOTOES = [
     ("sobre-wa", "wa"),
-    ("base", "verde"),
-    ("base", "verde-escuro"),
-    ("sobre-laranja", "laranja"),
+    ("base", "verde-marca"),
 ]
 
 if __name__ == "__main__":
     print(f"{'texto':<14} {'fundo':<14} {'raio':>6}  AA-normal  AA-grande  AAA")
     print("-" * 68)
     falhas = []
-    for nome_tx, cor_tx in TEXTOS.items():
+    pares = [(t, FUNDOS) for t in TEXTOS.items()] + [(t, FUNDOS_CLAROS) for t in TEXTOS_CLAROS.items()]
+    for (nome_tx, cor_tx), fundos in pares:
         if not cor_tx:
             continue
-        for nome_bg, hx_bg in FUNDOS.items():
+        for nome_bg, hx_bg in fundos.items():
             rgb_efetivo = rgba_sobre_fundo(cor_tx, hx_bg)
             r = ratiocontraste_rgb(rgb_efetivo, hex_rgb(hx_bg))
             normal = "sim" if r >= 4.5 else "NAO"

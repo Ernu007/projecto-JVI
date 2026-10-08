@@ -342,11 +342,10 @@ test('9.6: o orçamento continua a ser a única acção primária do hero, e a m
   assert.match(accoes[0].atributos, /btn--primario/);
   assert.doesNotMatch(accoes[1].atributos, /btn--primario/);
 
-  /* O que distingue os dois à vista: o primário tem degradê e brilho por
-     baixo; o do WhatsApp é uma cor lisa, sem sombra. */
+  /* Fase 10 (10.1): sem degradês nem brilhos. O primário é o verde da
+     marca; o do WhatsApp é o verde do WhatsApp — duas cores lisas. */
   const primario = corpo('.btn--primario');
-  assert.match(decl(primario, 'background'), /linear-gradient/);
-  assert.ok(decl(primario, 'box-shadow'), 'o botão primário perdeu o brilho');
+  assert.match(decl(primario, 'background'), /^var\(--verde-marca\)$/);
   const wa = corpo('.btn--wa', CSS_ORC);
   assert.equal(decl(wa, 'box-shadow'), undefined, 'o WhatsApp ganhou sombra: compete com o primário');
   assert.doesNotMatch(decl(wa, 'background'), /gradient|--verde/);

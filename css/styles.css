@@ -4,61 +4,58 @@
    ========================================================= */
 
 :root {
-  /* Cores da marca */
-  --verde:        #A9CF44;
+  /* Fase 10 (10.1): verde e preto, que são a marca. Preto no cabeçalho, no
+     hero e no rodapé; o resto da página é claro (ver `.seccao` mais
+     abaixo). O laranja e as cores do Google saíram da interface. */
+  --verde:        #A9CF44;   /* acento sobre fundo escuro */
+  --verde-marca:  #A9CF44;   /* fundo de botão e ponto: nunca texto sobre claro */
   --verde-escuro: #82C91E;
-  --laranja:      #EA8240;
-  --base:         #0F172A;
-  --claro:        #CBD5E1;
+  --base:         #0B0B0C;
+  --claro:        #D4D4D8;
 
-  /* Canais RGB das três cores de marca, para poderem ser usadas com
-     alfa: rgb(var(--verde-rgb) / 0.08). Sem isto, qualquer tons mais
-     claros da marca tinha de ser escrito à mão em rgba(), e mudar a
-     cor da marca significava editar dezenas de linhas. */
+  /* Canais RGB, para poderem ser usadas com alfa: rgb(var(--verde-rgb) / 0.08). */
   --verde-rgb:   169 207 68;
-  --laranja-rgb: 234 130 64;
-  --base-rgb:     15  23 42;
-  --claro-rgb:   203 213 225;
+  --base-rgb:     11  11 12;
+  --claro-rgb:   212 212 216;
 
-  /* Derivados */
-  --base-2:       #131E33;
-  --base-3:       #1B2740;
+  /* Derivados (tema escuro) */
+  --base-2:       #151516;
+  --base-3:       #1C1C1E;
   --linha:        rgb(var(--verde-rgb) / .16);
-  --texto:        #E8EDF5;
+  --texto:        #F4F4F5;
   --texto-suave:  rgb(var(--claro-rgb) / .82);
   --texto-fraco:  rgb(var(--claro-rgb) / .66);
 
   /* Superfícies que não tinham token */
-  --rodape:       #0B1220;   /* fundo do rodapé, um degrau abaixo do base */
-  --mapa:         #16243D;   /* degradê do cartão do mapa */
+  --rodape:       #060607;   /* fundo do rodapé, um degrau abaixo do base */
+  --mapa:         #161618;   /* centro do cartão do mapa */
 
-  /* Branco translúcido. Havia doze alphas diferentes para o que devia
-     ser o mesmo peso de superfície e de contorno; o mesmo cartão
-     aparecia com 0.06 num sítio e 0.07 noutro. */
+  /* Branco translúcido. */
   --vidro:        rgb(255 255 255 / 0.03);  /* preenchimento de superfície */
   --borda:        rgb(255 255 255 / 0.07);  /* contorno de cartão */
   --borda-forte:  rgb(255 255 255 / 0.11);  /* contorno de campo de texto */
 
-  /* Canais */
+  /* Verde do WhatsApp: só nos botões WhatsApp. */
   --wa:    #25D366;
 
-  /* Fase 8C/C5: os botões fixos de contacto com a paleta do Google —
-     "vermelho, verde e branco", um por botão. Os "-claro" são os tons da
-     própria paleta para a legenda sobre o fundo escuro (AA). */
-  --google-vermelho:       #EA4335;
-  --google-verde:          #34A853;
-  --google-branco:         #FFFFFF;
-  --google-vermelho-claro: #F28B82;
-  --google-verde-claro:    #81C995;
+  /* Tema claro (10.1). Os valores vivem aqui, com nome próprio, para o
+     `tools/contraste.py` os medir; `.seccao` e `.tema-claro` é que os
+     vestem. O verde claro `#A9CF44` NÃO serve de texto sobre branco
+     (1,9:1), por isso o texto verde do tema claro é este mais escuro. */
+  --c-fundo:        #FFFFFF;
+  --c-fundo-2:      #F7F8FA;
+  --c-texto:        #0B0B0C;
+  --c-texto-suave:  #3F4348;
+  --c-texto-fraco:  #565C63;
+  --c-verde:        #476608;
+  --c-verde-rgb:    71 102 8;
 
-  /* Estados. O mesmo estado semântico tinha três vermelhos
-     diferentes espalhados por quatro componentes. */
+  /* Estados. */
   --erro:        #F87171;    /* borda */
   --erro-txt:    #FCA5A5;    /* texto do erro */
-  --aviso-txt:   #F5B183;    /* texto do aviso */
+  --aviso-txt:   #FDE68A;    /* texto do aviso */
 
   /* Texto sobre fundos sólidos de cor viva */
-  --sobre-laranja: #1A0D03;
   --sobre-wa:      #05230F;
 
   /* Tipografia */
@@ -73,6 +70,33 @@
   --raio-sm: 10px;
   --sombra: 0 24px 60px -28px rgba(0, 0, 0, 0.85);
   --transicao: 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Tema claro: as secções do corpo da página. O cabeçalho, o hero, o
+   rodapé e os pop-ups ficam no tema escuro dos tokens de :root. Como os
+   derivados (`--linha`, `--texto-suave`…) são resolvidos onde são
+   declarados, têm de ser declarados outra vez aqui. */
+.seccao, .tema-claro {
+  --verde:        var(--c-verde);
+  --verde-escuro: var(--c-verde);
+  --verde-rgb:    var(--c-verde-rgb);
+  --base:         var(--c-fundo);
+  --base-rgb:     255 255 255;
+  --base-2:       var(--c-fundo-2);
+  --base-3:       var(--c-fundo);
+  --linha:        rgb(0 0 0 / .12);
+  --texto:        var(--c-texto);
+  --texto-suave:  var(--c-texto-suave);
+  --texto-fraco:  var(--c-texto-fraco);
+  --vidro:        rgb(0 0 0 / 0.03);
+  --borda:        rgb(0 0 0 / 0.1);
+  --borda-forte:  rgb(0 0 0 / 0.22);
+  --erro:         #B91C1C;
+  --erro-txt:     #B91C1C;
+  --aviso-txt:    #7C4A03;
+  --sombra:       0 18px 40px -26px rgba(0, 0, 0, 0.35);
+  background: var(--c-fundo);
+  color: var(--c-texto);
 }
 
 /* ---------- Reset ---------- */
@@ -120,7 +144,6 @@ ul { list-style: none; }
 }
 
 .verde  { color: var(--verde); }
-.laranja { color: var(--laranja); }
 
 .seccao { position: relative; padding: clamp(72px, 11vw, 140px) 0; }
 .seccao--alt { background: var(--base-2); }
@@ -165,20 +188,14 @@ ul { list-style: none; }
 }
 .btn svg { width: 19px; height: 19px; flex: none; }
 .btn--primario {
-  background: linear-gradient(135deg, var(--verde) 0%, var(--verde-escuro) 100%);
-  color: var(--base); box-shadow: 0 12px 30px -12px rgb(var(--verde-rgb) / .7);
+  background: var(--verde-marca); color: #0B0B0C;
 }
-.btn--primario:hover { transform: translateY(-3px); box-shadow: 0 20px 42px -14px rgb(var(--verde-rgb) / .85); }
-.btn--laranja {
-  background: var(--laranja); color: var(--sobre-laranja);
-  box-shadow: 0 12px 30px -12px rgb(var(--laranja-rgb) / .65);
-}
-.btn--laranja:hover { transform: translateY(-3px); }
+.btn--primario:hover { transform: translateY(-2px); background: #B8DA5C; }
 .btn--vidro {
-  background: rgba(255, 255, 255, 0.05); color: var(--texto);
-  border: 1px solid rgba(255, 255, 255, 0.16); backdrop-filter: blur(10px);
+  background: var(--vidro); color: var(--texto);
+  border: 1px solid var(--borda-forte);
 }
-.btn--vidro:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-3px); }
+.btn--vidro:hover { background: var(--borda); transform: translateY(-2px); }
 .btn--bloco { width: 100%; }
 .btn:active { transform: translateY(-1px) scale(0.99); }
 
@@ -322,8 +339,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 .hero__glow {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
-    radial-gradient(760px 520px at 74% 30%, rgb(var(--verde-rgb) / .17), transparent 66%),
-    radial-gradient(620px 460px at 12% 78%, rgb(var(--laranja-rgb) / .12), transparent 66%);
+    radial-gradient(760px 520px at 74% 30%, rgb(var(--verde-rgb) / .08), transparent 66%);
 }
 /* Vinheta suave: puxa o olhar para o texto e esconde as bordas do canvas */
 .hero__glow::after {
@@ -350,8 +366,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 }
 .hero__conteudo h1 em {
   font-style: normal;
-  background: linear-gradient(100deg, var(--verde) 0%, var(--verde-escuro) 55%, var(--laranja) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  color: var(--verde);
 }
 .hero__lead {
   font-size: clamp(16px, 2.1vw, 20px); color: var(--texto-suave);
@@ -396,7 +411,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 
 /* O percurso com setas, junto ao botão "Como chegar à JVI" (D36). É
    texto: três passos, do aeroporto ao terminal, com a seta de seguir em
-   frente num disco verde e o pin laranja na chegada. Não há setas de
+   frente num disco verde e o pin verde na chegada. Não há setas de
    viragem porque o projecto não sabe para que lado se vira — ver
    `PASSOS_PERCURSO` em js/rota.js.
 
@@ -419,7 +434,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 }
 .percurso__passo--chegada svg {
   flex: none; width: 26px; height: 26px; padding: 4px; border-radius: 50%;
-  background: rgb(var(--laranja-rgb) / .16); color: var(--laranja);
+  background: rgb(var(--verde-rgb) / .16); color: var(--verde);
 }
 .percurso__nota { margin-top: 7px; font-size: 12.5px; line-height: 1.5; color: var(--texto-fraco); }
 /* No telemóvel os passos ficam uns por baixo dos outros, como numa lista
@@ -482,7 +497,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 }
 .card::before {
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--verde), var(--laranja));
+  background: var(--verde-marca);
   transform: scaleX(0); transform-origin: left; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .card:hover { transform: translateY(-7px); border-color: rgb(var(--verde-rgb) / .3); }
@@ -561,7 +576,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 .fluxo { position: relative; }
 .fluxo__linha {
   position: absolute; left: 29px; top: 0; bottom: 0; width: 2px;
-  background: linear-gradient(180deg, var(--verde), var(--verde-escuro) 55%, var(--laranja));
+  background: var(--verde-marca);
   transform-origin: top;
 }
 @media (min-width: 900px) { .fluxo__linha { left: 50%; transform: translateX(-50%); } }
@@ -583,7 +598,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
   transition: background var(--transicao), color var(--transicao);
 }
 .etapa[aria-current="true"] .etapa__ponto { background: var(--verde); color: var(--base); }
-.etapa__et { font-size: 11.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--laranja); }
+.etapa__et { font-size: 11.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--texto-fraco); }
 .etapa h3 { font-size: 20px; font-weight: 800; margin: 6px 0 9px; letter-spacing: -0.02em; }
 .etapa p { font-size: var(--corpo); color: var(--texto-suave); }
 
@@ -626,9 +641,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 }
 .rota:hover { background: rgb(var(--verde-rgb) / .15); color: var(--verde); transform: translateY(-2px); }
 .rota::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); }
-.rota--hub { border-color: rgb(var(--laranja-rgb) / .4); background: rgb(var(--laranja-rgb) / .09); }
-.rota--hub::before { background: var(--laranja); }
-.rota--hub:hover { color: var(--laranja); background: rgb(var(--laranja-rgb) / .18); }
+.rota--hub { border-color: rgb(var(--verde-rgb) / .4); font-weight: 800; color: var(--texto); }
 
 /* =========================================================
    CREDENCIAIS
@@ -649,8 +662,8 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 
 .citacao {
   margin-top: 52px; padding: 34px 32px; border-radius: var(--raio);
-  background: linear-gradient(120deg, rgb(var(--verde-rgb) / .1), rgb(var(--laranja-rgb) / .07));
-  border: 1px solid var(--linha); border-left: 4px solid var(--laranja);
+  background: var(--base-2);
+  border: 1px solid var(--linha); border-left: 4px solid var(--verde-marca);
   font-size: clamp(18px, 2.6vw, 27px); font-weight: 700; line-height: 1.4;
   letter-spacing: -0.02em; max-width: 30ch;
 }
@@ -707,7 +720,7 @@ body.modal-aberto { overflow: hidden; }
    ========================================================= */
 .faq { margin-top: 40px; display: grid; gap: 12px; max-width: 860px; }
 .faq__i {
-  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--raio-sm);
+  border: 1px solid var(--borda); border-radius: var(--raio-sm);
   background: var(--base-2); overflow: hidden; transition: border-color var(--transicao);
 }
 .faq__i[open] { border-color: var(--linha); }
@@ -746,7 +759,7 @@ body.modal-aberto { overflow: hidden; }
 
 .carta-download {
   margin-top: 24px; padding: 24px; border-radius: var(--raio);
-  background: linear-gradient(120deg, rgb(var(--verde-rgb) / .12), rgb(var(--laranja-rgb) / .08));
+  background: var(--base-2);
   border: 1px solid var(--linha);
   display: flex; flex-wrap: wrap; align-items: center; gap: 18px; justify-content: space-between;
 }
@@ -791,9 +804,9 @@ body.modal-aberto { overflow: hidden; }
 .rodape__accoes { display: grid; gap: 12px; margin-bottom: 30px; }
 .btn-maps {
   flex-direction: column; gap: 8px; width: 100%; padding-block: 14px 16px; border-radius: var(--raio);
-  & svg { display: block; width: 100%; height: 44px; color: #EA4335; }
+  & svg { display: block; width: 100%; height: 44px; color: var(--verde); }
 }
-.rodape__accoes .btn-maps svg { display: block; width: 100%; height: 44px; color: #EA4335; }
+.rodape__accoes .btn-maps svg { display: block; width: 100%; height: 44px; color: var(--verde); }
 /* Fase 9 (9.7): "o botão falar no WhatsApp está pequeno, coloque do mesmo
    tamanho que o botão como chegar a JVI". Tinha a largura do texto,
    encostado à esquerda. Passa a ter a MESMA caixa do botão do Maps — a
@@ -855,14 +868,13 @@ body.modal-aberto { overflow: hidden; }
 .fixo { position: relative; }
 .fixo__btn { position: relative; }
 @keyframes pulso { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.55); opacity: 0; } }
-.fixo--wa   .fixo__btn { background: var(--google-verde);    color: var(--sobre-wa); }
-.fixo--tel  .fixo__btn { background: var(--google-branco);   color: var(--base); }
-.fixo--mail .fixo__btn { background: var(--google-vermelho); color: var(--google-branco); }
+.fixo--wa   .fixo__btn { background: var(--wa);           color: var(--sobre-wa); }
+.fixo--tel  .fixo__btn { background: var(--verde-marca);  color: #0B0B0C; }
+.fixo--mail .fixo__btn { background: var(--base-3); color: var(--texto); }
 .fixo__btn:hover { transform: scale(1.1); }
 .fixo:hover .fixo__txt, .fixo__btn:focus-visible + .fixo__txt { opacity: 1; transform: translateX(0); }
-.fixo--wa .fixo__txt { color: var(--google-verde-claro); }
-.fixo--tel .fixo__txt { color: var(--google-branco); }
-.fixo--mail .fixo__txt { color: var(--google-vermelho-claro); }
+.fixo--wa .fixo__txt { color: var(--wa); }
+.fixo--tel .fixo__txt { color: var(--verde-marca); }
 
 /* Fase 9 (9.8): no telemóvel os três botões são uma FILA no canto de
    baixo. Em coluna tapavam 162px de altura na borda direita — o fim dos
@@ -890,7 +902,7 @@ body.modal-aberto { overflow: hidden; }
 
 .barra-topo {
   position: fixed; top: 0; left: 0; z-index: 100; height: 3px; width: 0%;
-  background: linear-gradient(90deg, var(--verde), var(--laranja));
+  background: var(--verde-marca);
   transition: width 0.12s linear;
 }
 
@@ -924,9 +936,7 @@ body.modal-aberto { overflow: hidden; }
   transition: opacity .5s cubic-bezier(0.22, 1, 0.36, 1),
               filter .5s cubic-bezier(0.22, 1, 0.36, 1),
               transform .5s cubic-bezier(0.22, 1, 0.36, 1);
-  background: linear-gradient(100deg, var(--verde) 0%, var(--verde-escuro) 55%, var(--laranja) 100%);
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent;
+  color: var(--verde);
 }
 .pal--feio { color: transparent; }
 

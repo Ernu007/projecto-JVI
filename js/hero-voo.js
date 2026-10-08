@@ -44,7 +44,7 @@ import {
 } from './mapa-dados.js';
 
 const VERDE = [169, 207, 68];
-const LARANJA = [234, 130, 64];
+const BRANCO = [244, 244, 245];
 const CLARO = [232, 237, 245];
 
 /* A rota vem de `mapa-dados.js` (que a gera `tools/gerar-mapa.mjs`): as dez
@@ -315,7 +315,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
   /* ------------------------------------------- desenho: rota */
   /* O traço percorrido é o da PERNA em curso: na ida cresce de Maputo até
      ao avião, na volta de Pemba até ao avião. O degradê vai sempre do
-     verde, na ponta de onde se partiu, ao laranja, junto ao avião. */
+     verde, na ponta de onde se partiu, ao branco, junto ao avião. */
   function desenharRota(estado) {
     const ultimoPonto = pontos.length - 1;
     const i = Math.max(1, Math.min(ultimoPonto, Math.floor(pontos.length * estado.pos)));
@@ -339,7 +339,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
     }
     const grad = ctx.createLinearGradient(pontos[de].x, pontos[de].y, pontos[ate].x, pontos[ate].y);
     grad.addColorStop(0, 'rgba(169,207,68,0.95)');
-    grad.addColorStop(1, 'rgba(234,130,64,0.95)');
+    grad.addColorStop(1, 'rgba(244,244,245,0.95)');
     ctx.setLineDash([]);
     ctx.strokeStyle = grad;
     ctx.lineWidth = 2.2;
@@ -349,8 +349,8 @@ export function iniciarVoo(canvas, opcoes = {}) {
     ctx.restore();
 
     // pontos de partida e chegada
-    desenharPortal(pontos[0], LARANJA, 1);
-    desenharPortal(pontos[ultimoPonto], LARANJA, 1);
+    desenharPortal(pontos[0], BRANCO, 1);
+    desenharPortal(pontos[ultimoPonto], BRANCO, 1);
   }
 
   function desenharPortal(p, cor, escala = 1) {
@@ -408,7 +408,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
     ctx.translate(p.x, p.y);
     ctx.rotate(ang);
     ctx.globalAlpha = feita ? 0.95 : (viva ? 0.55 : 0.3);
-    ctx.fillStyle = `rgb(${LARANJA.join(',')})`;
+    ctx.fillStyle = `rgb(${BRANCO.join(',')})`;
     ctx.beginPath();
     ctx.moveTo(r, 0);
     ctx.lineTo(-r * 0.8, r * 0.75);
@@ -468,7 +468,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 3;
-      ctx.strokeStyle = '#0F172A';
+      ctx.strokeStyle = '#0B0B0C';
       ctx.lineJoin = 'round';
       ctx.globalAlpha = 0.85;
       ctx.strokeText(a.nome, x, y + raio + 9);

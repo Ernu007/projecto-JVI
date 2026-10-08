@@ -264,7 +264,7 @@ function iniciarMapa() {
     ctx.textAlign = align;
     ctx.textBaseline = 'middle';
     ctx.lineWidth = 3.5;
-    ctx.strokeStyle = '#0F172A';
+    ctx.strokeStyle = '#0B0B0C';
     ctx.lineJoin = 'round';
     ctx.strokeText(t, x, y);
     ctx.fillStyle = cor;
@@ -410,12 +410,12 @@ function iniciarMapa() {
       const r = 2.8 + 1.8 * luz;
       ctx.save();
       ctx.globalAlpha = 0.35 + 0.55 * luz;
-      ctx.fillStyle = nome === 'Maputo' ? '#EA8240' : '#A9CF44';
+      ctx.fillStyle = nome === 'Maputo' ? '#F4F4F5' : '#A9CF44';
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 0.3 + 0.5 * luz;
-      ctx.strokeStyle = nome === 'Maputo' ? '#EA8240' : '#A9CF44';
+      ctx.strokeStyle = nome === 'Maputo' ? '#F4F4F5' : '#A9CF44';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(x, y, r + 3, 0, Math.PI * 2);
@@ -429,20 +429,20 @@ function iniciarMapa() {
     const pulso = 13 + Math.sin(t * 2.2) * 4;
     ctx.save();
     const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 28);
-    hg.addColorStop(0, 'rgba(234,130,64,0.75)');
+    hg.addColorStop(0, 'rgba(244,244,245,0.55)');
     hg.addColorStop(1, 'transparent');
     ctx.fillStyle = hg;
     ctx.beginPath();
     ctx.arc(hx, hy, 28, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = '#EA8240';
+    ctx.strokeStyle = '#F4F4F5';
     ctx.lineWidth = 1.3;
     ctx.beginPath();
     ctx.arc(hx, hy, pulso, 0, Math.PI * 2);
     ctx.stroke();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = '#EA8240';
+    ctx.fillStyle = '#F4F4F5';
     ctx.beginPath();
     ctx.arc(hx, hy, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -457,7 +457,7 @@ function iniciarMapa() {
       const a = agencyPoint(nome);
       if (!a) continue;
       etiqueta(X(a.x) + (a.x < 34 ? -11 : 11), Y(a.y) + 14, rotuloDe(nome),
-        nome === 'Maputo' ? '#EA8240' : '#A9CF44', a.x < 34 ? 'right' : 'left');
+        nome === 'Maputo' ? '#F4F4F5' : '#A9CF44', a.x < 34 ? 'right' : 'left');
     }
   }
 

@@ -101,13 +101,34 @@ test('o contraste do texto principal continua a passar AA', () => {
   const fundos = { '--base': hex(token('--base')), '--base-2': hex(token('--base-2')),
     '--base-3': hex(token('--base-3')), '--rodape': hex(token('--rodape')) };
 
-  for (const nome of ['--texto', '--texto-suave', '--texto-fraco', '--claro',
-    '--verde', '--verde-escuro', '--laranja']) {
+  for (const nome of ['--texto', '--texto-suave', '--texto-fraco', '--claro', '--verde']) {
     const [frente, alpha] = resolver(token(nome));
     for (const [fnome, fundo] of Object.entries(fundos)) {
       const r = ratio(sobre(frente, alpha, fundo), fundo);
       assert.ok(r >= 4.5, `${nome} sobre ${fnome} dá ${r.toFixed(2)}:1`);
     }
+  }
+});
+
+/* Fase 10 (10.1): o tema claro do corpo da página. O verde claro da marca
+   (#A9CF44) dá 1,9:1 sobre branco e NÃO pode ser texto ali: o texto verde
+   do tema claro é o `--c-verde`, mais escuro. */
+test('10.1: o texto do tema claro passa AA sobre os dois fundos claros', () => {
+  const fundos = { '--c-fundo': hex(token('--c-fundo')), '--c-fundo-2': hex(token('--c-fundo-2')) };
+  for (const nome of ['--c-texto', '--c-texto-suave', '--c-texto-fraco', '--c-verde']) {
+    for (const [fnome, fundo] of Object.entries(fundos)) {
+      const r = ratio(hex(token(nome)), fundo);
+      assert.ok(r >= 4.5, `${nome} sobre ${fnome} dá ${r.toFixed(2)}:1`);
+    }
+  }
+  const marcaSobreBranco = ratio(hex(token('--verde-marca')), hex(token('--c-fundo')));
+  assert.ok(marcaSobreBranco < 4.5, 'o verde da marca passou a servir de texto sobre branco? confirme o contraste');
+});
+
+test('10.1: sem laranja nem cores do Google na interface', () => {
+  for (const [, f, txt] of CSS) {
+    const sem = txt.replace(/\/\*[\s\S]*?\*\//g, ' ');
+    assert.doesNotMatch(sem, /laranja|google-|#EA8240|#EA4335|#34A853|#FBBC05|#4285F4/i, `${f} ainda tem laranja ou cores do Google`);
   }
 });
 
@@ -119,9 +140,7 @@ test('o contraste do texto principal continua a passar AA', () => {
 test('9.6: o texto dos botoes de cor solida passa AA sobre a cor do botao', () => {
   const pares = [
     ['--sobre-wa', '--wa'],              // WhatsApp: hero, rodapé, ecrã de sucesso
-    ['--base', '--verde'],               // primário, ponta clara do degradê
-    ['--base', '--verde-escuro'],        // primário, ponta escura do degradê
-    ['--sobre-laranja', '--laranja'],    // "Descarregar PDF"
+    ['--base', '--verde-marca'],         // primário: texto preto sobre o verde da marca
   ];
   for (const [texto, fundo] of pares) {
     const r = ratio(hex(token(texto)), hex(token(fundo)));
@@ -168,11 +187,11 @@ test('o titulo do hero mantem-se legivel mesmo no pior estado', () => {
   // pior caso: cada cor do degradê do título, composta sobre o fundo do
   // hero com a opacidade no piso. As cores vêm do gradiente no CSS.
   const fundo = hex(token('--base'));
-  const gradiente = /\.pal\s*\{[\s\S]*?linear-gradient\([^;]*?([\s\S]*?)\);/.exec(bloco)?.[1] ?? '';
-  const cores = [...gradiente.matchAll(/var\((--[a-z-]+)\)/g)]
+  const regraPal = /\.pal\s*\{([\s\S]*?)\n\}/.exec(bloco)?.[1] ?? '';
+  const cores = [...regraPal.matchAll(/(?:^|[\s;])color:\s*var\((--[a-z-]+)\)/g)]
     .map((x) => x[1])
     .map((nome) => hex(token(nome)));
-  assert.ok(cores.length >= 3, 'não encontrei as cores do degradê do título');
+  assert.ok(cores.length >= 1, 'não encontrei a cor do título');
 
   for (const frente of cores) {
     const composta = frente.map((c, i) => Math.round(piso * c + (1 - piso) * fundo[i]));

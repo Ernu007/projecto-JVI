@@ -108,34 +108,20 @@ const contraste = (a, b) => {
   return (x + 0.05) / (y + 0.05);
 };
 
-test('C5: as cores do Google estão no :root, uma por botão', () => {
-  assert.equal(token('--google-vermelho').toUpperCase(), '#EA4335');
-  assert.equal(token('--google-verde').toUpperCase(), '#34A853');
-  assert.equal(token('--google-branco').toUpperCase(), '#FFFFFF');
+/* Fase 10 (10.1/10.5): os botões fixos são dois — WhatsApp (verde do
+   WhatsApp) e telefone (verde da JVI). Sem cores do Google, sem Gmail. */
+test('C5: WhatsApp = verde do WhatsApp, telefone = verde da JVI', () => {
+  assert.match(regra('.fixo--wa   .fixo__btn'), /background\s*:\s*var\(--wa\)/);
+  assert.match(regra('.fixo--tel  .fixo__btn'), /background\s*:\s*var\(--verde-marca\)/);
 });
 
-test('C5: e-mail = vermelho, WhatsApp = verde, telefone = branco', () => {
-  assert.match(regra('.fixo--mail .fixo__btn'), /background\s*:\s*var\(--google-vermelho\)/);
-  assert.match(regra('.fixo--wa   .fixo__btn'), /background\s*:\s*var\(--google-verde\)/);
-  assert.match(regra('.fixo--tel  .fixo__btn'), /background\s*:\s*var\(--google-branco\)/);
-});
-
-test('C5: o ícone de cada botão lê-se sobre a cor nova (3:1, gráfico)', () => {
-  const pares = [
-    ['.fixo--mail .fixo__btn', '--google-vermelho'],
-    ['.fixo--wa   .fixo__btn', '--google-verde'],
-    ['.fixo--tel  .fixo__btn', '--google-branco'],
-  ];
-  for (const [sel, fundo] of pares) {
-    const cor = /(?:^|;)\s*color\s*:\s*var\((--[a-z-]+)\)/.exec(regra(sel))?.[1];
-    assert.ok(cor, `${sel} não declara a cor do ícone com um token`);
-    const r = contraste(hex(token(cor)), hex(token(fundo)));
-    assert.ok(r >= 3, `${sel}: ícone ${cor} sobre ${fundo} dá ${r.toFixed(2)}:1`);
-  }
+test('C5: o ícone de cada botão lê-se sobre a cor (3:1, gráfico)', () => {
+  assert.ok(contraste(hex(token('--sobre-wa')), hex(token('--wa'))) >= 3);
+  assert.ok(contraste(hex('#0B0B0C'), hex(token('--verde-marca'))) >= 3);
 });
 
 test('C5: a legenda de cada botão lê-se sobre o fundo escuro (AA)', () => {
-  for (const sel of ['.fixo--wa .fixo__txt', '.fixo--tel .fixo__txt', '.fixo--mail .fixo__txt']) {
+  for (const sel of ['.fixo--wa .fixo__txt', '.fixo--tel .fixo__txt']) {
     const cor = /color\s*:\s*var\((--[a-z-]+)\)/.exec(regra(sel))?.[1];
     assert.ok(cor, `${sel} não tem cor`);
     const r = contraste(hex(token(cor)), hex(token('--base')));

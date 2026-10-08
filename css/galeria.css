@@ -45,7 +45,7 @@
   /* Um gesto, uma fotografia: sem isto, um gesto rápido com o dedo
      atravessava três ou quatro de uma vez. */
   scroll-snap-stop: always;
-  border-radius: var(--raio-sm); border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--raio-sm); border: 1px solid var(--borda);
   background: var(--base-3); cursor: zoom-in; aspect-ratio: 4 / 3;
 }
 
@@ -76,10 +76,10 @@
 }
 .gal__ctl {
   width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--vidro); border: 1px solid var(--borda-forte);
   color: var(--texto); transition: background var(--transicao);
 }
-.gal__ctl:hover { background: rgba(255, 255, 255, 0.12); }
+.gal__ctl:hover { background: var(--borda); }
 .gal__ctl svg { width: 18px; height: 18px; }
 .gal__contador { min-width: 64px; text-align: center; font-size: 13px; font-weight: 600; color: var(--texto-suave); }
 
