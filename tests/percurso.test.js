@@ -23,7 +23,7 @@ import { MORADA_JVI, PASSOS_PERCURSO, NOTA_PERCURSO, linkDirecoes } from '../js/
    - não há distâncias nem tempos.
    --------------------------------------------------------------------------- */
 
-const HTML = fs.readFileSync('index.html', 'utf8');
+const HTML = fs.readFileSync('contactos.html', 'utf8');
 const CSS = fs.readFileSync('css/styles.css', 'utf8');
 
 const entidades = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
@@ -92,7 +92,7 @@ test('a nota diz que as viragens dependem de onde se parte e remete para o Maps'
 
 test('ha um percurso junto a cada botao "Como chegar a JVI"', () => {
   const botoes = HTML.match(/<a\b[^>]*google\.com\/maps\/dir\/[^>]*>/g) ?? [];
-  assert.equal(botoes.length, 2, 'esperava dois botões de direcções: o do hero e o do rodapé');
+  assert.equal(botoes.length, 1, 'esperava um só botão de direcções: o dos Contactos');
   assert.equal(blocos().length, botoes.length, 'cada botão de direcções tem de ter o percurso ao lado');
 
   /* "Junto": entre o fim do botão e o percurso só pode haver o fecho do
@@ -100,7 +100,7 @@ test('ha um percurso junto a cada botao "Como chegar a JVI"', () => {
   for (const m of HTML.matchAll(/google\.com\/maps\/dir\/[\s\S]*?Como chegar à JVI\s*<\/a>([\s\S]*?)<div class="percurso">/g)) {
     assert.match(m[1], /^\s*(?:<\/div>)?\s*$/, `há conteúdo entre o botão e o percurso: ${m[1].trim().slice(0, 80)}`);
   }
-  assert.equal([...HTML.matchAll(/Como chegar à JVI\s*<\/a>\s*(?:<\/div>)?\s*<div class="percurso">/g)].length, 2);
+  assert.equal([...HTML.matchAll(/Como chegar à JVI\s*<\/a>\s*(?:<\/div>)?\s*<div class="percurso">/g)].length, 1);
 });
 
 test('os passos do ecra sao os de js/rota.js, pela mesma ordem', () => {
@@ -126,7 +126,7 @@ test('as setas estao visiveis no ecra e nao sao lidas duas vezes', () => {
   const regra = /\.percurso__seta\s*\{([^}]*)\}/.exec(CSS)?.[1];
   assert.ok(regra, 'não há regra CSS para .percurso__seta');
   assert.doesNotMatch(regra, /display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0\b/);
-  assert.match(regra, /color\s*:\s*var\(--verde\)/, 'a seta devia destacar-se na cor da marca');
+  assert.match(regra, /background\s*:\s*var\(--verde-marca\)/, 'a seta devia destacar-se na cor da marca');
 });
 
 test('o percurso nao tira nada ao botao: o link do Maps continua igual', () => {
@@ -142,22 +142,3 @@ test('o percurso nao tira nada ao botao: o link do Maps continua igual', () => {
   }
 });
 
-test('o percurso do hero fica fora de .hero__acoes: as accoes continuam a ser tres', () => {
-  const accoes = /<div class="hero__acoes">([\s\S]*?)<\/div>/.exec(HTML)?.[1] ?? '';
-  assert.doesNotMatch(accoes, /percurso/);
-  assert.match(HTML, /<div class="hero__acoes">[\s\S]*?<\/div>\s*<div class="percurso">/);
-});
-
-/* Com o percurso o conteúdo do hero cresceu, e acima de 760px o hero
-   guardava 136px em baixo para as provas não ficarem por baixo da etiqueta
-   da rota (`.hero__rota`). Na Fase 9 (9.3) a etiqueta saiu, a pedido do
-   cliente; a reserva saiu com ela, senão ficava um vazio de 56px no fundo
-   do hero a guardar lugar a uma coisa que já não existe. */
-test('9.3: sem a etiqueta da rota, o hero deixa de lhe guardar espaco', () => {
-  const css = CSS.replace(/\/\*[\s\S]*?\*\//g, ' ');
-  assert.doesNotMatch(css, /\.hero__rota/, 'a etiqueta da rota continua no CSS');
-  assert.doesNotMatch(css, /@media \(min-width: 761px\)\s*\{\s*\.hero\s*\{\s*padding-bottom/,
-    'o hero continua a guardar espaço para a etiqueta que saiu');
-  /* O hero fica com o padding de base, igual em todas as larguras. */
-  assert.match(css, /\.hero\s*\{[^}]*padding:\s*130px 0 80px/);
-});

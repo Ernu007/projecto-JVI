@@ -21,7 +21,11 @@ import fs from 'node:fs';
    perguntas de "está dentro de X?" e sem dependências.
 --------------------------------------------------------------------------- */
 
-const HTML = fs.readFileSync('index.html', 'utf8');
+import { SITE } from './paginas.js';
+
+/* Fase 10: as cinco páginas concatenadas. Cada âmbito (`#orcRaiz`, `#luz`,
+   `#confirm`) vive numa só página, e os ids não se repetem entre elas. */
+const HTML = SITE;
 
 /** Tags que não têm conteúdo próprio, logo não abrem âmbito. */
 const VAZIAS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img',
@@ -99,10 +103,9 @@ function dentroDe(seletor, idRaiz) {
   };
 }
 
-test('a arvore do index.html foi bem construida', () => {
+test('a arvore do site foi bem construida', () => {
   assert.ok(T.size > 20, `a arvore ficou demasiado pequena (${T.size})`);
   assert.ok(T.has('#orcRaiz'), 'não encontrei #orcRaiz');
-  assert.ok(T.has('#modal'), 'não encontrei #modal');
   assert.ok(T.has('#luz'), 'não encontrei #luz');
   assert.ok(T.has('#confirm'), 'não encontrei #confirm');
 });
@@ -186,9 +189,9 @@ test('9.5: cada cartao do carrossel continua a abrir a sua fotografia na luzbox'
     'a pista do carrossel saiu de dentro de [data-gal]');
 });
 
-test('o template do formulario esta no topo do documento, nao dentro do modal', () => {
+test('o template do formulario esta no topo do documento, nao dentro de #orcRaiz', () => {
   const caminho = T.get('#tplOrc');
   assert.ok(caminho, 'não encontrei #tplOrc');
-  assert.ok(!caminho.includes('#modal'),
-    '#tplOrc dentro do modal faria o template nunca ser clonado');
+  assert.ok(!caminho.includes('#orcRaiz'),
+    '#tplOrc dentro de #orcRaiz seria apagado quando o JS monta o formulário');
 });

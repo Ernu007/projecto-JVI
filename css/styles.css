@@ -70,6 +70,8 @@
   --raio-sm: 10px;
   --sombra: 0 24px 60px -28px rgba(0, 0, 0, 0.85);
   --transicao: 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Altura da faixa dos botões fixos: 48 + 12 de margem + 12 de folga. */
+  --faixa: 72px;
 }
 
 /* Tema claro: as secções do corpo da página. O cabeçalho, o hero, o
@@ -114,9 +116,10 @@ html {
 
 body {
   font-family: var(--fonte);
-  background: var(--base);
+  background: var(--rodape);
   color: var(--texto);
   line-height: 1.65;
+  padding-bottom: calc(var(--faixa) + env(safe-area-inset-bottom, 0px)); /* a faixa dos botões fixos */
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -137,6 +140,7 @@ ul { list-style: none; }
 
 /* ---------- Utilitários ---------- */
 .container { width: 100%; max-width: var(--largura); margin-inline: auto; padding-inline: 24px; }
+@media (max-width: 480px) { .container { padding-inline: 20px; } }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0;
@@ -145,7 +149,7 @@ ul { list-style: none; }
 
 .verde  { color: var(--verde); }
 
-.seccao { position: relative; padding: clamp(72px, 11vw, 140px) 0; }
+.seccao { position: relative; padding: clamp(40px, 6vw, 72px) 0; }
 .seccao--alt { background: var(--base-2); }
 
 /* Etiqueta de secção */
@@ -202,17 +206,16 @@ ul { list-style: none; }
 /* =========================================================
    HEADER
    ========================================================= */
+/* Fase 10: preto em todas as páginas (é a cor da marca) e sem botão de
+   orçamento — o cliente riscou-o: duplicava o do hero e apertava o
+   cabeçalho no telemóvel. */
 .header {
   position: fixed; inset: 0 0 auto 0; z-index: 90;
-  padding: 16px 0;
-  transition: background var(--transicao), padding var(--transicao), box-shadow var(--transicao);
+  padding: 16px 0; background: var(--base);
+  box-shadow: 0 1px 0 var(--linha);
+  transition: padding var(--transicao);
 }
-.header--preso {
-  padding: 8px 0;
-  background: rgb(var(--base-rgb) / .86);
-  backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: 0 1px 0 var(--linha), 0 12px 34px -22px #000;
-}
+.header--preso { padding: 8px 0; }
 .header__int { display: flex; align-items: center; gap: 20px; }
 
 /* Skip link. Escondido fora do foco, e aparece no primeiro Tab —
@@ -223,17 +226,15 @@ ul { list-style: none; }
   top: 8px; left: 8px;
   padding: 12px 18px;
   border-radius: var(--raio-sm);
-  background: var(--verde); color: var(--base);
+  background: var(--verde-marca); color: #0B0B0C;
   font-size: 15px; font-weight: 800;
   transform: translateY(-160%);
   transition: transform 0.15s ease;
 }
 .pular:focus { transform: translateY(0); }
 
-/* O `main` tem `tabindex="-1"` para receber o foco do skip link e dos
-   links de navegação interna. Sem isto não se vê um anel de foco à volta
-   de todo o conteúdo: o foco entra no `main` e não fica nenhum sinal de
-   onde se está. */
+/* O `main` tem `tabindex="-1"` para receber o foco do skip link. Sem isto
+   não se vê um anel de foco à volta de todo o conteúdo. */
 main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 
 .brand { display: flex; align-items: center; gap: 12px; flex: none; min-width: 44px; min-height: 44px; }
@@ -246,43 +247,18 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
 .nav { display: none; margin-left: auto; }
 .nav ul { display: flex; gap: 4px; }
 .nav a {
-  display: block; padding: 8px 12px; border-radius: 8px;
-  font-size: 14.5px; font-weight: 600; color: var(--texto-suave);
+  display: block; padding: 8px 14px; border-radius: 8px;
+  font-size: 15px; font-weight: 600; color: var(--texto-suave);
   transition: color var(--transicao), background var(--transicao);
 }
 .nav a:hover { color: var(--verde); background: rgb(var(--verde-rgb) / .08); }
-
-/* B8: o botão de orçamento fica SEMPRE à vista, em todos os
-   tamanhos de ecrã. O cliente repetiu duas vezes que é o botão que
-   converte. O `.header` já é `position: fixed`, por isso o botão vai
-   com ele; o `sticky` com `top` declarado na mesma regra é o seguro
-   para o dia em que o header deixar de ser fixo — `sticky` sem `top`
-   não prende nada.
-
-   Não passa a `fixed` por conta própria: tentou-se, e a 1280 px o
-   botão ficava por cima do último item do menu. No telemóvel encolhe
-   e fica ao lado do botão do menu. */
-.header__cta { display: block; position: sticky; top: 0; z-index: 5; margin-left: auto; }
-/* Fase 9 (9.8): encolhe a letra e o padding, mas não o alvo de toque. Sem
-   o `min-height` o botão ficava com 42,3px aqui e 40,6px abaixo de 380px
-   (medido no Chrome) — e é o botão que o cliente quer sempre à mão. */
-@media (max-width: 899px) {
-  .header__cta .btn { padding: 10px 16px; font-size: 13.5px; gap: 8px; min-height: 44px; }
-  .header__cta .btn svg { width: 16px; height: 16px; }
-}
-/* Sem o menu de topo, o botão do menu encosta-se ao de orçamento. */
-@media (max-width: 1199px) { .header__cta + .menu-btn { margin-left: 12px; } }
-@media (max-width: 380px) {
-  /* Abaixo de 380 px o texto não cabe ao lado do logótipo e do menu. */
-  .header__cta .btn { padding: 10px 12px; font-size: 12.5px; min-height: 44px; }
-  .header__cta .btn svg { display: none; }
-}
+.nav a[aria-current="page"] { color: var(--texto); box-shadow: inset 0 -2px 0 var(--verde-marca); border-radius: 0; }
 
 /* Menu mobile */
 .menu-btn {
   margin-left: auto; width: 44px; height: 44px; border-radius: 12px;
-  display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
+  display: grid; place-items: center; border: 1px solid var(--borda-forte);
+  background: var(--vidro);
 }
 .menu-btn svg { width: 22px; height: 22px; transition: transform var(--transicao); }
 .menu-btn[aria-expanded="true"] svg { transform: rotate(90deg); }
@@ -307,412 +283,176 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
   transition: all var(--transicao);
 }
 .menu a:hover { color: var(--verde); background: rgb(var(--verde-rgb) / .08); border-color: var(--linha); }
-.menu .btn { margin-top: 14px; }
+.menu a[aria-current="page"] { color: var(--texto); border-color: var(--verde-marca); }
 .menu-fundo {
-  position: fixed; inset: 0; z-index: 94; background: rgba(6, 11, 22, 0.72);
-  backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity var(--transicao);
+  position: fixed; inset: 0; z-index: 94; background: rgba(0, 0, 0, 0.72);
+  opacity: 0; pointer-events: none; transition: opacity var(--transicao);
 }
 .menu-fundo[data-visivel="true"] { opacity: 1; pointer-events: auto; }
 
-/* Sete itens no menu (Fase 8B) já não cabem a 900 px ao lado do nome
-   da marca e do botão de orçamento: o menu de topo aparece a partir de
-   1200 px, e o nome por extenso só quando sobra largura para ele. */
-@media (min-width: 1200px) {
+/* Cinco itens cabem ao lado da marca a partir de 900 px. */
+@media (min-width: 900px) {
   .nav { display: block; margin-left: auto; }
-  .nav + .header__cta { margin-left: 0; }
   .menu-btn, .menu, .menu-fundo { display: none; }
 }
-@media (min-width: 700px) and (max-width: 1199px), (min-width: 1440px) {
+@media (min-width: 700px) {
   .brand__txt { display: block; }
 }
 
 /* =========================================================
+   TOPO DAS PÁGINAS INTERIORES
+   ========================================================= */
+.pagina-topo { padding: 112px 0 36px; background: var(--base); border-bottom: 1px solid var(--linha); }
+.pagina-topo h1 {
+  font-size: clamp(30px, 5vw, 48px); line-height: 1.1;
+  font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px;
+}
+.pagina-topo__lead { font-size: clamp(16px, 1.7vw, 18px); color: var(--texto-suave); max-width: 56ch; }
+
+/* =========================================================
    HERO
    ========================================================= */
+/* Fase 10: hero curto. O mapa de Moçambique e o avião vivem sobre o preto
+   e são o ÚNICO mapa do site. Sem provas, sem grelha, sem brilho. */
 .hero {
-  position: relative; min-height: 100svh;
+  position: relative; min-height: min(100svh, 720px);
   display: flex; align-items: center;
-  padding: 130px 0 80px; overflow: hidden;
+  padding: 120px 0 64px; overflow: hidden; background: var(--base);
 }
 .hero__fundo { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .hero__fundo canvas { width: 100%; height: 100%; }
-.hero__glow {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background:
-    radial-gradient(760px 520px at 74% 30%, rgb(var(--verde-rgb) / .08), transparent 66%);
-}
 /* Vinheta suave: puxa o olhar para o texto e esconde as bordas do canvas */
+.hero__glow { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .hero__glow::after {
   content: ""; position: absolute; inset: 0;
   background:
     linear-gradient(to right, var(--base) 0%, rgb(var(--base-rgb) / .72) 26%, transparent 52%),
     linear-gradient(to top, var(--base) 0%, transparent 26%);
 }
-.hero__grelha {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.5;
-  background-image:
-    linear-gradient(rgb(var(--verde-rgb) / .05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--verde-rgb) / .05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 85% 65% at 50% 40%, #000 35%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 40%, #000 35%, transparent 100%);
-}
 .hero__int { position: relative; z-index: 2; }
 
-.hero__conteudo { max-width: 660px; }
+.hero__conteudo { max-width: 560px; }
 .hero__conteudo h1 {
-  font-size: clamp(38px, 7.4vw, 76px); line-height: 1.03;
-  font-weight: 800; letter-spacing: -0.04em; margin-bottom: 22px;
-}
-.hero__conteudo h1 em {
-  font-style: normal;
-  color: var(--verde);
+  font-size: clamp(38px, 7vw, 68px); line-height: 1.03;
+  font-weight: 800; letter-spacing: -0.04em; margin-bottom: 20px;
 }
 .hero__lead {
-  font-size: clamp(16px, 2.1vw, 20px); color: var(--texto-suave);
-  max-width: 54ch; margin-bottom: 32px;
+  font-size: clamp(16px, 2vw, 19px); color: var(--texto-suave);
+  max-width: 44ch; margin-bottom: 28px;
 }
-.hero__acoes { display: flex; flex-wrap: wrap; gap: 13px; margin-bottom: 44px; }
+/* O WhatsApp é o botão em destaque (largo, verde WhatsApp); o orçamento é
+   o secundário, por baixo, em contorno. */
+.hero__acoes { display: grid; gap: 12px; max-width: 380px; }
 
-/* A disposição das acções do hero é ESCrita, não deixada ao acaso.
-   Com `flex-wrap: wrap` e larguras intrínsecas, quem caía em que linha
-   dependia do comprimento do texto: medido no Chrome, os três botões
-   davam 204.50 + 221.20 + 217.88 + dois gaps de 13 = 669.58px contra
-   660px de contentor, e o "Como chegar à JVI" descia sozinho, com a
-   largura dele, encostado à esquerda por baixo do botão primário —
-   lia-se como botão órfão.
-
-   Por isso o botão das direcções é `btn--bloco`: `flex: 1 0 100%` põe
-   numa base de 100% do contentor, o que garante que ele fica na linha
-   de baixo e a ocupar a largura toda. A primeira linha leva os outros
-   dois — orçamento primário a par do WhatsApp — e cabe com folga
-   (204.50 + 13 + 221.20 = 438.70px). */
-
-/* Fase 9 (9.4): "pedir orçamento" e "falar no WhatsApp" ocupam METADE cada
-   um da linha das direcções. Antes cada um tinha a largura do seu texto
-   (204.50 e 221.20px) e a linha de cima acabava a meio da de baixo.
-
-   A base é metade da linha menos metade do gap (13px / 2), e os dois
-   crescem por igual: ficam com a mesma largura tenham o texto que tiverem,
-   e as duas metades mais o gap dão exactamente a largura do botão de baixo.
-   A regra das direcções vem a seguir e ganha por especificidade. */
-.hero__acoes > * { flex: 1 1 calc(50% - 6.5px); }
-.hero__acoes > .btn--bloco { flex: 1 0 100%; }
-
-/* Abaixo de 520px de viewport cada metade deixa de levar o texto do botão
-   mais largo: a 521px o contentor tem 473px, cada metade 230px, e "Falar
-   no WhatsApp" mede 221.20px — é o último ecrã em que cabe com folga. As
-   três acções passam a coluna de botões inteiros, que é também o que se
-   toca melhor num telemóvel. */
-@media (max-width: 520px) {
-  .hero__acoes > * { flex: 1 0 100%; }
+/* No telemóvel o mapa sai de trás do texto: abaixo de 760px passa a ter a
+   sua caixa, em fluxo, por baixo do conteúdo. O limite é o do `w < 760` do
+   js/hero-voo.js — o teste confere que são o mesmo. */
+@media (max-width: 759px) {
+  .hero { flex-direction: column; align-items: stretch; padding-bottom: 0; min-height: 0; }
+  .hero__fundo { position: relative; inset: auto; order: 2; height: min(110vw, 440px); margin-top: 8px; }
+  .hero__glow::after { background: none; }
 }
-
 
 /* O percurso com setas, junto ao botão "Como chegar à JVI" (D36). É
-   texto: três passos, do aeroporto ao terminal, com a seta de seguir em
-   frente num disco verde e o pin verde na chegada. Não há setas de
-   viragem porque o projecto não sabe para que lado se vira — ver
-   `PASSOS_PERCURSO` em js/rota.js.
-
-   O fundo é quase opaco de propósito: no hero o percurso fica por cima do
-   mapa, e com o `--vidro` dos cartões as fronteiras das províncias
-   atravessavam o texto. */
+   texto: três passos, do aeroporto ao terminal. Não há setas de viragem
+   porque o projecto não sabe para que lado se vira — ver
+   `PASSOS_PERCURSO` em js/rota.js. */
 .percurso { font-size: 14px; color: var(--texto-suave); }
 .percurso__passos {
   list-style: none; margin: 0; padding: 11px 14px;
   display: flex; flex-wrap: wrap; gap: 10px 30px;
   border: 1px solid var(--linha); border-radius: var(--raio);
-  background: rgb(var(--base-rgb) / .78);
+  background: var(--base-2);
 }
 .percurso__passo { display: flex; align-items: center; gap: 9px; line-height: 1.3; }
 .percurso__txt b { display: block; color: var(--texto); font-weight: 800; }
 .percurso__seta {
   flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
-  background: rgb(var(--verde-rgb) / .14); color: var(--verde);
+  background: var(--verde-marca); color: #0B0B0C;
   font-size: 17px; font-weight: 800; line-height: 1;
 }
 .percurso__passo--chegada svg {
   flex: none; width: 26px; height: 26px; padding: 4px; border-radius: 50%;
-  background: rgb(var(--verde-rgb) / .16); color: var(--verde);
+  background: var(--verde-marca); color: #0B0B0C;
 }
 .percurso__nota { margin-top: 7px; font-size: 12.5px; line-height: 1.5; color: var(--texto-fraco); }
-/* No telemóvel os passos ficam uns por baixo dos outros, como numa lista
-   de instruções, e cada um numa linha só. */
 @media (max-width: 760px) {
   .percurso__passos { flex-direction: column; gap: 9px; }
   .percurso__txt b { display: inline; }
 }
-/* No hero o percurso fica encostado ao botão, e é ele que passa a dar a
-   distância até às provas. Sem `:has()` a distância ao botão fica nos
-   44px de sempre: mais larga, mas inteira. */
-.hero__acoes:has(+ .percurso) { margin-bottom: 14px; }
-.hero__acoes + .percurso { margin-bottom: 32px; }
-
-/* Fase 9 (9.8): no telemóvel o mapa sai de trás do texto.
-
-   O canvas ocupa o hero inteiro, por trás do conteúdo. No computador o
-   país fica à direita e o texto à esquerda. Num ecrã estreito ficavam um
-   em cima do outro: com as províncias acesas, o parágrafo e os botões
-   liam-se por cima de um mapa verde, e do mapa via-se o que sobrava entre
-   as letras. Não se lia nem um nem outro.
-
-   Abaixo de 760px o mapa passa a ter a sua caixa, em fluxo, por baixo do
-   conteúdo: o texto fica sobre o fundo liso e o mapa vê-se inteiro, com o
-   avião. O limite é o do `w < 760` do js/hero-voo.js — o teste confere
-   que são o mesmo. O véu que escurecia o texto deixa de fazer falta. */
-@media (max-width: 759px) {
-  .hero { flex-direction: column; align-items: stretch; padding-bottom: 0; }
-  .hero__fundo { position: relative; inset: auto; order: 2; height: min(150vw, 600px); margin-top: 12px; }
-  .hero__glow::after { background: none; }
-}
-
-.hero__provas { display: flex; flex-wrap: wrap; gap: 12px 34px; }
-.prova { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--texto-suave); }
-.prova svg { width: 18px; height: 18px; color: var(--verde); flex: none; }
-.prova b { color: var(--texto); font-weight: 800; }
-
-/* Indicador de scroll */
-.scroll-hint {
-  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
-  z-index: 3; display: none; flex-direction: column; align-items: center; gap: 8px;
-  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--texto-fraco); font-weight: 700;
-}
-.scroll-hint__linha { width: 1px; height: 40px; background: linear-gradient(var(--verde), transparent); }
-@media (min-width: 900px) { .scroll-hint { display: flex; } }
 
 /* =========================================================
-   DESTAQUES (4 diferenciais)
+   INÍCIO — os três serviços em resumo
    ========================================================= */
-.grelha-4 { display: grid; gap: 18px; margin-top: 52px; }
-@media (min-width: 640px)  { .grelha-4 { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1000px) { .grelha-4 { grid-template-columns: repeat(4, 1fr); } }
-
-.card {
-  position: relative; padding: 30px 26px; border-radius: var(--raio);
-  background: linear-gradient(160deg, var(--base-3) 0%, var(--base-2) 100%);
-  border: 1px solid var(--borda);
-  overflow: hidden; transition: transform var(--transicao), border-color var(--transicao);
+.resumo { list-style: none; display: grid; gap: 0; border-top: 1px solid var(--borda); }
+.resumo__i { display: grid; gap: 4px; padding: 20px 0; border-bottom: 1px solid var(--borda); }
+.resumo h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+.resumo p { color: var(--texto-suave); }
+.resumo__mais {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 12px;
+  font-weight: 700; color: var(--verde); text-decoration: underline; text-underline-offset: 4px;
 }
-.card::before {
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--verde-marca);
-  transform: scaleX(0); transform-origin: left; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+@media (min-width: 760px) {
+  .resumo { grid-template-columns: repeat(3, 1fr); gap: 32px; border-top: 0; }
+  .resumo__i { border-bottom: 0; border-top: 3px solid var(--verde-marca); padding-top: 16px; }
 }
-.card:hover { transform: translateY(-7px); border-color: rgb(var(--verde-rgb) / .3); }
-.card:hover::before { transform: scaleX(1); }
-.card__ico {
-  width: 52px; height: 52px; border-radius: 15px; display: grid; place-items: center;
-  background: rgb(var(--verde-rgb) / .12); color: var(--verde); margin-bottom: 20px;
-}
-.card__ico svg { width: 25px; height: 25px; }
-.card h3 { font-size: 19px; font-weight: 800; margin-bottom: 9px; letter-spacing: -0.02em; }
-.card p { font-size: 14.5px; color: var(--texto-suave); }
 
 /* =========================================================
    SERVIÇOS
    ========================================================= */
-/* B5: dois cartões lado a lado, em duas colunas fixas. Eram três
-   colunas para quatro cartões menos, e a última linha ficava com uma
-   figura sozinha — o "alternado" que o cliente viu. Abaixo de 640 px
-   passa a uma coluna: dois cartões de 160 px num telemóvel não se leem. */
-.grelha-3 { display: grid; gap: 20px; margin-top: 52px; grid-template-columns: repeat(2, 1fr); }
-@media (max-width: 640px) { .grelha-3 { grid-template-columns: 1fr; } }
-
-/* Fase 8C/C4: "Outras províncias" maior e centrado. Ocupa as duas colunas,
-   e para a linha de cima não ficar com um cartão sozinho o primeiro (o das
-   duas fotografias) ocupa duas linhas — 1 | 2 / 1 | 3 / 4 4. */
-.servico--destaque {
-  grid-column: 1 / -1; justify-self: center; width: min(100%, 860px);
-  text-align: center;
-}
-.servico--destaque .servico__figura { aspect-ratio: 21 / 8; }
-.servico.servico--destaque h3 { font-size: clamp(24px, 3vw, 32px); }
-.servico.servico--destaque p { font-size: 17px; }
-@media (min-width: 641px) {
-  .grelha-3 > .servico:first-child { grid-row: span 2; }
-  .grelha-3 > .servico:first-child .servico__figura { aspect-ratio: auto; flex: 1 1 auto; min-height: 280px; }
-}
-
+.servicos { display: grid; gap: 24px; grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 640px) { .servicos { grid-template-columns: 1fr; } }
 .servico {
-  position: relative; border-radius: var(--raio); overflow: hidden;
-  background: var(--base-3); border: 1px solid var(--borda);
+  border-radius: var(--raio); overflow: hidden;
+  background: var(--c-fundo); border: 1px solid var(--borda);
   display: flex; flex-direction: column;
-  transition: transform var(--transicao), border-color var(--transicao);
 }
-.servico:hover { transform: translateY(-7px); border-color: rgb(var(--verde-rgb) / .3); }
-.servico__figura { position: relative; margin: 0; aspect-ratio: 16 / 10; overflow: hidden; background: var(--base-2); }
-/* B5: as caixas no chão de um lado, as encomendas para a Zambézia do
-   outro — na mesma figura, metade cada. */
-.servico__figura--par { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-.servico__figura img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
-.servico:hover .servico__figura img { transform: scale(1.07); }
-.servico__figura::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(to top, var(--base-3) 4%, rgba(19, 30, 51, 0.15) 55%, transparent);
-}
-.servico__n {
-  position: absolute; top: 14px; left: 14px; z-index: 2;
-  font-size: 12px; font-weight: 800; letter-spacing: 0.1em;
-  padding: 5px 12px; border-radius: 100px;
-  background: rgb(var(--base-rgb) / .75); backdrop-filter: blur(8px);
-  color: var(--verde); border: 1px solid var(--linha);
-}
-
-/* O corpo do cartão é o próprio `<article>` (sem `<div>` à volta do
-   texto): cada filho que não é a figura leva a margem lateral. */
-.servico { padding-bottom: 28px; }
-.servico > :not(.servico__figura) { margin-inline: 26px; }
-.servico h3 { font-size: 20px; font-weight: 800; margin-top: 24px; margin-bottom: 10px; letter-spacing: -0.02em; }
-.servico p { font-size: var(--corpo); color: var(--texto-suave); margin-bottom: 16px; }
-.servico__lista { margin-top: auto; display: grid; gap: 7px; }
-.servico__lista li { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: var(--texto-fraco); }
-.servico__lista svg { width: 15px; height: 15px; color: var(--verde-escuro); flex: none; margin-top: 3px; }
+.servico__figura { margin: 0; aspect-ratio: 16 / 10; overflow: hidden; background: var(--base-2); }
+.servico__figura img { width: 100%; height: 100%; object-fit: cover; }
+.servico h2 { margin: 22px 24px 8px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.servico p { margin: 0 24px 24px; font-size: var(--corpo); color: var(--texto-suave); }
 
 /* =========================================================
-   FLUXO — scrolltelling das 5 etapas
+   DA RECOLHA À ENTREGA — quatro passos curtos
    ========================================================= */
-.fluxo { position: relative; }
-.fluxo__linha {
-  position: absolute; left: 29px; top: 0; bottom: 0; width: 2px;
-  background: var(--verde-marca);
-  transform-origin: top;
+.titulo-seccao { margin-bottom: 20px; }
+.passos { list-style: none; display: grid; gap: 12px; margin-bottom: 28px; }
+.passo {
+  display: grid; grid-template-columns: 36px 1fr; column-gap: 14px; align-items: start;
+  padding: 16px 18px; border-radius: var(--raio-sm);
+  background: var(--c-fundo); border: 1px solid var(--borda);
 }
-@media (min-width: 900px) { .fluxo__linha { left: 50%; transform: translateX(-50%); } }
-
-.fluxo__lista { position: relative; display: grid; gap: 18px; }
-.etapa {
-  position: relative; padding: 28px 28px 28px 78px; border-radius: var(--raio);
-  background: var(--base-2); border: 1px solid var(--borda);
-  transition: border-color var(--transicao), transform var(--transicao);
-}
-.etapa:hover { border-color: rgb(var(--verde-rgb) / .28); }
-.etapa__ponto {
-  position: absolute; left: 12px; top: 30px; z-index: 2;
-  width: 34px; height: 34px; border-radius: 50%;
+.passo__n {
+  grid-row: span 2; width: 36px; height: 36px; border-radius: 50%;
   display: grid; place-items: center;
-  background: var(--base); border: 2px solid var(--verde);
-  font-size: 13px; font-weight: 800; color: var(--verde);
-  box-shadow: 0 0 0 5px rgb(var(--verde-rgb) / .1);
-  transition: background var(--transicao), color var(--transicao);
+  background: var(--verde-marca); color: #0B0B0C; font-weight: 800;
 }
-.etapa[aria-current="true"] .etapa__ponto { background: var(--verde); color: var(--base); }
-.etapa__et { font-size: 11.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--texto-fraco); }
-.etapa h3 { font-size: 20px; font-weight: 800; margin: 6px 0 9px; letter-spacing: -0.02em; }
-.etapa p { font-size: var(--corpo); color: var(--texto-suave); }
-
+.passo h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+.passo p { font-size: 15px; color: var(--texto-suave); }
 @media (min-width: 900px) {
-  .fluxo__lista { gap: 26px; }
-  .etapa { width: 50%; padding: 30px 32px; }
-  .etapa:nth-child(even) { margin-left: 50%; }
-  .etapa__ponto { left: auto; right: -17px; top: 32px; }
-  .etapa:nth-child(even) .etapa__ponto { right: auto; left: -17px; }
+  .passos { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .passo { grid-template-columns: 1fr; row-gap: 6px; padding: 20px; }
+  .passo__n { grid-row: auto; margin-bottom: 6px; }
 }
 
 /* =========================================================
-   COBERTURA — mapa
+   SOBRE NÓS — visão, missão, objectivo
    ========================================================= */
-.mapa-zona { position: relative; margin-top: 46px; }
-.mapa-lado { display: grid; gap: 20px; }
-@media (min-width: 900px) {
-  .mapa-lado { grid-template-columns: minmax(0, 1fr) 260px; align-items: start; }
-}
-.mapa-caixa {
-  position: relative; border-radius: var(--raio); overflow: hidden;
-  background: radial-gradient(ellipse at 50% 45%, var(--mapa) 0%, var(--base) 74%);
-  border: 1px solid var(--linha);
-}
-.mapa-grafico { height: clamp(440px, 52vw, 700px); }
-.mapa-caixa canvas { width: 100%; height: 100%; }
-.mapa-aviso {
-  padding: 16px 22px; background: rgba(9, 15, 28, 0.92);
-  border-top: 1px solid var(--linha); font-size: 13.5px; color: var(--texto-suave);
-}
-.mapa-aviso b { color: var(--verde); }
-
-.rotas { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 26px; }
-@media (min-width: 900px) { .rotas { display: grid; grid-template-columns: 1fr 1fr; margin-top: 0; } }
-.rota {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 15px; border-radius: 100px; font-size: 13px; font-weight: 600;
-  background: rgb(var(--verde-rgb) / .07); border: 1px solid var(--linha); color: var(--texto-suave);
-  transition: all var(--transicao);
-}
-.rota:hover { background: rgb(var(--verde-rgb) / .15); color: var(--verde); transform: translateY(-2px); }
-.rota::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--verde); }
-.rota--hub { border-color: rgb(var(--verde-rgb) / .4); font-weight: 800; color: var(--texto); }
-
-/* =========================================================
-   CREDENCIAIS
-   ========================================================= */
-.grelha-credenciais { display: grid; gap: 16px; margin-top: 50px; }
-@media (min-width: 620px)  { .grelha-credenciais { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1000px) { .grelha-credenciais { grid-template-columns: repeat(4, 1fr); } }
-
-.cred {
-  padding: 24px; border-radius: var(--raio-sm);
-  background: var(--vidro); border: 1px solid var(--borda);
-  transition: all var(--transicao);
-}
-.cred:hover { background: rgb(var(--verde-rgb) / .06); border-color: rgb(var(--verde-rgb) / .28); transform: translateY(-4px); }
-.cred__rot { font-size: 11.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--verde); margin-bottom: 10px; }
-.cred__val { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; word-break: break-word; }
-.cred__desc { font-size: 15px; color: var(--texto-suave); }
-
-.citacao {
-  margin-top: 52px; padding: 34px 32px; border-radius: var(--raio);
-  background: var(--base-2);
-  border: 1px solid var(--linha); border-left: 4px solid var(--verde-marca);
-  font-size: clamp(18px, 2.6vw, 27px); font-weight: 700; line-height: 1.4;
-  letter-spacing: -0.02em; max-width: 30ch;
-}
-.citacao footer { display: block; margin-top: 16px; font-size: 13.5px; font-weight: 600; color: var(--texto-fraco); letter-spacing: 0.04em; }
-
-/* =========================================================
-   APRESENTAÇÃO / VISÃO-MISSÃO-OBJETIVO
-   ========================================================= */
-.pilares { display: grid; gap: 18px; margin-top: 50px; }
-@media (min-width: 900px) { .pilares { grid-template-columns: repeat(3, 1fr); } }
-.pilar { padding: 32px 28px; border-radius: var(--raio); background: var(--base-2); border: 1px solid var(--borda); }
-.pilar__t { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
-.pilar__t svg { width: 22px; height: 22px; color: var(--verde); flex: none; }
-.pilar h3 { font-size: 17px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.pilares { display: grid; gap: 12px; }
+.pilar { padding: 20px 22px; border-radius: var(--raio-sm); background: var(--base-2); border: 1px solid var(--borda); }
+.pilar h2 { font-size: 15px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
 .pilar p { font-size: var(--corpo); color: var(--texto-suave); }
 
 /* =========================================================
    FORMULÁRIO DE ORÇAMENTO
    ------------------------------------------------------------
-   Vive em css/orcamento.css, carregado depois deste ficheiro.
-   O formulário de 4 passos que aqui vivia foi substituído pelo
-   assistente de 3 passos dentro do pop-up (Fase 1 do briefing).
+   Vive em css/orcamento.css, carregado depois deste ficheiro. Desde a
+   Fase 10 está na página orcamento.html, e já não num pop-up.
    ========================================================= */
-
-
-/* =========================================================
-   MODAL
-   ========================================================= */
-.modal {
-  position: fixed; inset: 0; z-index: 120; display: none;
-  align-items: center; justify-content: center; padding: 20px;
-}
-.modal[data-aberto="true"] { display: flex; }
-.modal__fundo { position: absolute; inset: 0; background: rgba(5, 9, 18, 0.84); backdrop-filter: blur(8px); animation: fade 0.3s; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-.modal__caixa {
-  position: relative; width: min(860px, 100%); max-height: 90svh; overflow-y: auto;
-  background: var(--base-2); border: 1px solid var(--linha); border-radius: var(--raio);
-  box-shadow: var(--sombra); padding: 32px; animation: sobe 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
 @keyframes sobe { from { opacity: 0; transform: translateY(28px) scale(0.97); } to { opacity: 1; transform: none; } }
-.modal__fechar {
-  position: absolute; top: 14px; right: 14px; z-index: 3;
-  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--vidro); color: var(--texto-suave);
-  transition: all var(--transicao);
-}
-.modal__fechar:hover { background: rgba(248, 113, 113, 0.2); color: var(--erro-txt); }
-.modal__fechar svg { width: 19px; height: 19px; }
+/* Trava o scroll do fundo enquanto um diálogo (confirmação, privacidade,
+   fotografia ampliada) está aberto. */
 body.modal-aberto { overflow: hidden; }
 
 /* =========================================================
@@ -741,165 +481,85 @@ body.modal-aberto { overflow: hidden; }
 .faq__r b { color: var(--verde); }
 
 /* =========================================================
-   CONTACTOS / RODAPÉ
+   CONTACTOS
    ========================================================= */
-.grelha-cont { display: grid; gap: 34px; margin-top: 46px; }
-@media (min-width: 900px) { .grelha-cont { grid-template-columns: 1.15fr 1fr; gap: 60px; } }
-
-.cont-lista { display: grid; gap: 14px; }
+.grelha-cont {
+  display: grid; gap: 24px;
+  grid-template-areas: "principal" "lista" "chegar";
+}
+@media (min-width: 900px) {
+  .grelha-cont {
+    grid-template-columns: 1fr 1fr; column-gap: 48px; align-items: start;
+    grid-template-areas: "principal chegar" "lista chegar";
+  }
+}
+.cont-principal { grid-area: principal; display: grid; gap: 10px; }
+.cont-lista { grid-area: lista; display: grid; gap: 12px; }
+.cont-chegar { grid-area: chegar; display: grid; gap: 14px; }
+.cont-numero { font-size: 14px; color: var(--texto-fraco); }
+.cont-numero span { margin-left: 6px; }
 .cont-item {
   display: flex; gap: 16px; padding: 16px 20px; border-radius: 13px;
   background: var(--vidro); border: 1px solid var(--borda);
-  transition: all var(--transicao);
+  transition: border-color var(--transicao), background var(--transicao);
 }
-.cont-item:hover { border-color: rgb(var(--verde-rgb) / .32); background: rgb(var(--verde-rgb) / .05); transform: translateX(5px); }
+a.cont-item:hover { border-color: var(--verde); background: rgb(var(--verde-rgb) / .05); }
 .cont-item svg { width: 21px; height: 21px; color: var(--verde); flex: none; margin-top: 3px; }
 .cont-item b { display: block; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--texto-fraco); margin-bottom: 3px; }
 .cont-item span { font-size: var(--corpo); font-weight: 600; }
 
-.carta-download {
-  margin-top: 24px; padding: 24px; border-radius: var(--raio);
-  background: var(--base-2);
-  border: 1px solid var(--linha);
-  display: flex; flex-wrap: wrap; align-items: center; gap: 18px; justify-content: space-between;
-}
-/* Selector de CLASSE, e nao `.carta-download h4`: o titulo do cartao e'
-   um `<h3 class="carta-download__t">` (index.html), e nao existe nenhum
-   `<h4>` la dentro. A regra antiga nao casava com nada, e o titulo ficava
-   com o tamanho e as margens por omissao do browser — 1.17em bold em vez
-   dos 18px/800 que se pretendia. */
-.carta-download__t { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-.carta-download p { font-size: 15px; color: var(--texto-suave); }
+/* =========================================================
+   SOBRE NÓS — a empresa
+   ========================================================= */
+.empresa { display: grid; gap: 28px; align-items: start; }
+@media (min-width: 860px) { .empresa { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; } }
+.empresa__dados { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 24px; margin: 24px 0; }
+.empresa__dados dt { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-fraco); }
+.empresa__dados dd { margin: 4px 0 0; font-weight: 700; color: var(--texto); word-break: break-word; }
+@media (max-width: 520px) { .empresa__dados { grid-template-columns: 1fr 1fr; } }
 
-/* A figura dos contactos. Fase 8C/C6: era o camião, passou a ser o
-   panfleto (a capa da carta de apresentação), e abre a carta — "porque
-   eles vão conhecer a empresa". O aspect-ratio vem das dimensões reais
-   declaradas no HTML, para a caixa não saltar enquanto a imagem carrega. */
-.cont-figura { margin: 0; max-width: 460px; justify-self: center; width: 100%; }
-.cont-figura__link { display: block; border-radius: var(--raio); transition: transform var(--transicao); }
-.cont-figura__link:hover { transform: translateY(-4px); }
-.cont-figura img {
-  border-radius: var(--raio); border: 1px solid var(--linha);
-  aspect-ratio: 794 / 1123; width: 100%; height: auto;
-  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
-}
-.cont-figura figcaption { margin-top: 12px; font-size: 13.5px; color: var(--texto-fraco); text-align: center; }
-
-.rodape { border-top: 1px solid var(--linha); padding: 40px 0 34px; background: var(--rodape); }
-.rodape__topo { display: flex; flex-wrap: wrap; gap: 26px; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+/* =========================================================
+   RODAPÉ — legal mínimo
+   ========================================================= */
+.rodape { border-top: 1px solid var(--linha); padding: 32px 0 28px; background: var(--rodape); }
+.rodape__topo { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .rodape__logo { height: 46px; width: auto; }
 .rodape__fiscais { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12.5px; color: var(--texto-fraco); }
 .rodape__fiscais b { color: var(--verde); font-weight: 700; }
-/* Fase 8C/C7: discreto, mas legível e visível — não é texto escondido. */
-.rodape__seo { display: grid; gap: 6px; margin-bottom: 24px; font-size: 13px; line-height: 1.6; color: var(--texto-fraco); }
-.rodape__seo b { color: var(--texto-suave); font-weight: 700; }
-.rodape__seo a { color: var(--texto-suave); text-decoration: underline; text-decoration-color: rgb(var(--verde-rgb) / .4); text-underline-offset: 3px; }
-.rodape__seo a:hover { color: var(--verde); }
-.rodape__base { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; padding-top: 24px; border-top: 1px solid var(--borda); font-size: 12.5px; color: var(--texto-fraco); }
-/* B10: as acções do rodapé. O "Como chegar à JVI" ocupa a largura
-   toda e o pin do Google Maps também: é uma faixa de 44 px de altura com
-   o desenho ao centro, não um ícone do tamanho da letra encostado ao
-   texto. O `& svg` aninhado é o que o `tests/interface.test.js` lê; a
-   regra irmã logo abaixo cobre os browsers sem CSS aninhado. */
-.rodape__accoes { display: grid; gap: 12px; margin-bottom: 30px; }
-.btn-maps {
-  flex-direction: column; gap: 8px; width: 100%; padding-block: 14px 16px; border-radius: var(--raio);
-  & svg { display: block; width: 100%; height: 44px; color: var(--verde); }
-}
-.rodape__accoes .btn-maps svg { display: block; width: 100%; height: 44px; color: var(--verde); }
-/* Fase 9 (9.7): "o botão falar no WhatsApp está pequeno, coloque do mesmo
-   tamanho que o botão como chegar a JVI". Tinha a largura do texto,
-   encostado à esquerda. Passa a ter a MESMA caixa do botão do Maps — a
-   linha inteira, o ícone numa faixa de 44px por cima do texto — em todos
-   os ecrãs. `tests/hero-acoes.test.js` compara as duas regras. */
-.rodape__accoes .btn--wa { flex-direction: column; gap: 8px; width: 100%; padding-block: 14px 16px; border-radius: var(--raio); border: 1px solid transparent; }
-.rodape__accoes .btn--wa svg { display: block; width: 100%; height: 44px; }
+.rodape__base { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--borda); font-size: 12.5px; color: var(--texto-fraco); }
 .rodape__links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
-/* Fase 9 (9.8): eram texto de 12,5px com 20,6px de altura. O link fica
-   com a mesma letra, mas a área de toque sobe aos 44px. */
+/* A área de toque sobe aos 44px. */
 .rodape__links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--texto-fraco); transition: color var(--transicao); }
 .rodape__links a:hover { color: var(--verde); }
 
 /* =========================================================
-   NOSSA EMPRESA (B9)
+   BOTÕES FIXOS (canto inferior direito): WhatsApp e telefone
    ========================================================= */
-.empresa { display: grid; gap: 40px; align-items: center; }
-@media (min-width: 860px) { .empresa { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; } }
-.empresa__carta { margin: 0; max-width: 520px; width: 100%; justify-self: center; }
-.empresa__carta img {
-  width: 100%; height: auto; border-radius: var(--raio-sm);
-  border: 1px solid var(--borda); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8);
-}
-.empresa__dados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-top: 28px; }
-.empresa__dados dt { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-fraco); }
-.empresa__dados dd { margin: 4px 0 0; font-weight: 700; color: var(--verde); }
-
-/* =========================================================
-   BOTÕES FIXOS (canto inferior direito)
-   ========================================================= */
-/* Fase 9 (9.8): `pointer-events: none` na caixa, `auto` nos botões. A
-   caixa tem a largura das legendas (156px), que estão invisíveis; os
-   botões só 48px. O resto era uma faixa transparente por cima da página
-   que engolia os toques. */
+/* Dois botões pequenos, numa fila, em TODOS os tamanhos de ecrã. Não tapam
+   conteúdo no fim da página: o `body` reserva a altura da faixa
+   (`--faixa`: 48 px de botão, 12 px de margem em baixo e 12 px de folga).
+   `pointer-events: none` na caixa, `auto` nos botões: o resto da faixa não
+   engole toques. */
 .fixos {
-  position: fixed; right: 18px; bottom: 18px; z-index: 80;
-  display: flex; flex-direction: column; gap: 11px; align-items: flex-end;
+  position: fixed; right: 12px; bottom: 12px; z-index: 80;
+  display: flex; flex-direction: row; gap: 10px; align-items: center;
   pointer-events: none;
 }
-.fixo { display: flex; align-items: center; gap: 11px; }
-.fixo__txt {
-  font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 100px;
-  background: rgb(var(--base-rgb) / .92); border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px); white-space: nowrap;
-  opacity: 0; transform: translateX(14px); pointer-events: none;
-  transition: opacity var(--transicao), transform var(--transicao);
-}
+.fixo { display: flex; }
 .fixo__btn {
-  width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center;
+  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
   pointer-events: auto;
-  color: #fff; box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.9);
-  transition: transform var(--transicao), box-shadow var(--transicao);
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+  transition: transform var(--transicao);
 }
-.fixo__btn svg { width: 27px; height: 27px; }
-.fixo__btn::after {
-  content: ""; position: absolute; width: 54px; height: 54px; border-radius: 50%;
-  border: 2px solid currentColor; opacity: 0; animation: pulso 2.6s ease-out infinite;
-}
-.fixo { position: relative; }
-.fixo__btn { position: relative; }
-@keyframes pulso { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.55); opacity: 0; } }
+.fixo__btn svg { width: 24px; height: 24px; }
 .fixo--wa   .fixo__btn { background: var(--wa);           color: var(--sobre-wa); }
 .fixo--tel  .fixo__btn { background: var(--verde-marca);  color: #0B0B0C; }
-.fixo--mail .fixo__btn { background: var(--base-3); color: var(--texto); }
-.fixo__btn:hover { transform: scale(1.1); }
-.fixo:hover .fixo__txt, .fixo__btn:focus-visible + .fixo__txt { opacity: 1; transform: translateX(0); }
-.fixo--wa .fixo__txt { color: var(--wa); }
-.fixo--tel .fixo__txt { color: var(--verde-marca); }
-
-/* Fase 9 (9.8): no telemóvel os três botões são uma FILA no canto de
-   baixo. Em coluna tapavam 162px de altura na borda direita — o fim dos
-   três botões do hero ao mesmo tempo; em fila tapam 48px. As legendas só
-   aparecem com o rato por cima, que num ecrã de toque não existe. E o
-   rodapé guarda o espaço da fila, para o fim da página não ficar por
-   baixo dela. */
-@media (max-width: 560px) {
-  .fixos { right: 12px; bottom: 12px; gap: 9px; flex-direction: row; align-items: center; }
-  .fixo__btn { width: 48px; height: 48px; }
-  .fixo__btn svg { width: 24px; height: 24px; }
-  .fixo__btn::after { width: 48px; height: 48px; }
-  .fixo__txt { display: none; }
-  .rodape { padding-bottom: 84px; }
-}
+.fixo__btn:hover { transform: scale(1.08); }
 
 /* =========================================================
-   ANIMAÇÕES AO SCROLL
+   BARRA DE PROGRESSO E ENTRADA DO HERO
    ========================================================= */
-.revelar { opacity: 0; transform: translateY(34px); transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1); }
-.revelar[data-visivel="true"] { opacity: 1; transform: none; }
-.revelar-d { transition-delay: 0.1s; }
-.revelar-d2 { transition-delay: 0.2s; }
-.revelar-d3 { transition-delay: 0.3s; }
-
 .barra-topo {
   position: fixed; top: 0; left: 0; z-index: 100; height: 3px; width: 0%;
   background: var(--verde-marca);
@@ -912,9 +572,6 @@ body.modal-aberto { overflow: hidden; }
 .hero.pronto .hero__conteudo > *:nth-child(1) { animation-delay: 0.10s; }
 .hero.pronto .hero__conteudo > *:nth-child(2) { animation-delay: 0.22s; }
 .hero.pronto .hero__conteudo > *:nth-child(3) { animation-delay: 0.34s; }
-.hero.pronto .hero__conteudo > *:nth-child(4) { animation-delay: 0.46s; }
-.hero.pronto .hero__conteudo > *:nth-child(5) { animation-delay: 0.58s; }
-.hero.pronto .hero__conteudo > *:nth-child(6) { animation-delay: 0.70s; }
 @keyframes heroEntra { to { opacity: 1; transform: none; } }
 
 /* Palavras do titulo: cada uma acende quando o aviao passa
@@ -943,6 +600,5 @@ body.modal-aberto { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-  .revelar { opacity: 1; transform: none; }
   .hero__conteudo > * { opacity: 1; transform: none; }
 }

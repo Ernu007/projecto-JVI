@@ -26,7 +26,11 @@ A carta gera-se em `http://127.0.0.1:8765/carta/`.
 
 ```
 Trabalho Jvi/
-├── index.html              Landing page completa
+├── index.html              Início (hero com o avião e o mapa, três serviços em resumo)
+├── servicos.html           Serviços e "Da recolha à entrega"
+├── sobre.html              Sobre nós, credenciais e galeria de 6 fotografias
+├── orcamento.html          O formulário de orçamento e as perguntas frequentes
+├── contactos.html          WhatsApp, telefone, email, morada e "Como chegar"
 ├── package.json            "type": "module" + script de testes
 ├── css/
 │   ├── styles.css          Tokens da marca, layout e conteúdo editorial
@@ -35,7 +39,7 @@ Trabalho Jvi/
 │   ├── privacidade.css     Diálogo da política de privacidade
 │   └── fontes.css          Fontes auto-alojadas
 ├── js/
-│   ├── main.js             Menu, scroll, hero 3D, mapa, modal, FAQs
+│   ├── main.js             Menu, hero com o voo, formulário (em orcamento.html), diálogos
 │   ├── precos.js           Fórmula de preço — puro, sem DOM, tem testes
 │   ├── orcamento.js        Assistente, validação, mensagens de WhatsApp — puro + DOM
 │   ├── galeria.js          Luzbox acessível
@@ -279,7 +283,7 @@ porque não estão referenciadas.
 
 Ao substituí-las: deite os `.jpg` em `assets/img/galeria/`, corra
 `python tools/otimizar-galeria.py`, apague os `.jpg`, e actualize o `alt` de
-cada `<button class="gal__item">` em `index.html`.
+cada `<button class="gal__item">` em `sobre.html`.
 
 > O `alt` de cada fotografia foi escrito **depois de ver a foto**. Três das
 > descrições do briefing não correspondiam ao que estava na imagem — a tabela
@@ -353,7 +357,7 @@ uns aos outros. Já apanhou um: `logo-cor.png` era cópia exacta de `logo.png`,
 | Escape de HTML uma única vez, em `campoLimpo` | `functions/submit.js` → `esc()` |
 | Protecção contra CSV/formula injection na Sheet | `functions/submit.js` → `celula()` |
 | Limite de tamanho por campo (6–1200 chars) | `functions/submit.js` → `LIMITES` |
-| `maxlength` nos campos do formulário | `index.html` |
+| `maxlength` nos campos do formulário | `orcamento.html` |
 | Validação estrita do telefone, com contagem de dígitos | `functions/submit.js` → `RE_TEL` |
 | Província e forma de pagamento em allowlist | `functions/submit.js` → `PROVINCIAS`, `PAGAMENTOS` |
 | Preço recalculado no servidor, nunca vindo do browser | `functions/submit.js` → `calcularPrecoServidor()` |

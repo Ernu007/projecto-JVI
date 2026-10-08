@@ -41,7 +41,7 @@ test('a classe do body deriva-se do estado, não é alternada às cegas', () => 
      legal é exactamente o bug: com só modal e confirm, fechar a
      Política continuava a destravar o scroll. */
   const corpo = MAIN.match(/function sincronizarBody\(\)\s*\{([\s\S]*?)\n\}/)?.[1] ?? '';
-  for (const el of ['modal', 'legal', 'confirm']) {
+  for (const el of ['legal', 'confirm']) {
     assert.ok(corpo.includes(el),
       `sincronizarBody tem de considerar ${el} — sem ele a classe sai `
       + 'enquanto um dos diálogos continua aberto');
@@ -65,30 +65,3 @@ test('nenhum fechar* tira a classe do body a unconditional', () => {
     + 'sincronizarBody: é isso que destrava o scroll com o modal aberto');
 });
 
-test('o modal fica inert enquanto a Política de Privacidade está por cima', () => {
-  const abrir = MAIN.match(/function abrirLegal\(\)\s*\{([\s\S]*?)\n\}/)?.[1] ?? '';
-  const fechar = MAIN.match(/function fecharLegal\(\)\s*\{([\s\S]*?)\n\}/)?.[1] ?? '';
-
-  assert.match(abrir, /modal\.inert\s*=\s*true/,
-    'a Política abre por cima do modal: o modal tem de ficar inert, senão '
-    + 'o teclado e o leitor de ecrã passeiam pelo formulário de baixo');
-  assert.match(abrir, /dataset\.sobreModal\s*=/,
-    'tem de guardar se foi por cima do modal, para o fechar saber se '
-    + 'desarma o inert ou se nunca o pôs');
-  assert.match(fechar, /modal\.inert\s*=\s*false/,
-    'ao fechar tem de desarmar o inert que pôs');
-});
-
-test('o Escape do modal cede à Política de Privacidade', () => {
-  /* Guarda já existia para o `confirm`. Sem a mesma guarda para o
-     `legal`, um Escape fechava a Política E o modal, e perdia-se o
-     formulário preenchido. */
-  const handler = MAIN.match(
-    /document\.addEventListener\('keydown',\s*\(e\)\s*=>\s*\{([\s\S]*?)\n\}\);/)?.[1] ?? '';
-
-  assert.match(handler, /confirm\?\.dataset\.aberto === 'true'\)\s*return/,
-    'a guarda do confirm tem de continuar la');
-  assert.match(handler, /legal\?\.dataset\.aberto === 'true'\)\s*return/,
-    'falta a guarda equivalente para o legal — sem ela o Escape fecha os '
-    + 'dois e o utilizador perde o que preencheu');
-});

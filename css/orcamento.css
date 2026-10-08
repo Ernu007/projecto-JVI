@@ -28,12 +28,11 @@
 
 /* Fase 9 (9.8): a 360px cada passo tinha 44px para o nome, ao lado do
    número, e "Emissor" e "Pagamento" acabavam em reticências. No telemóvel
-   o nome passa para baixo do número e fica com a coluna inteira. E o
-   pop-up deixa de gastar 104px em margens: os campos passam de 256 para
-   302px. */
+   o nome passa para baixo do número e fica com a coluna inteira. E a caixa
+   do formulário deixa de gastar margens: os campos ficam com a largura
+   quase toda do ecrã. */
 @media (max-width: 480px) {
-  .modal { padding: 10px; }
-  .modal__caixa { padding: 26px 18px 22px; }
+  .orc-caixa { padding: 20px 14px; }
   .orc-passo { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 
@@ -172,21 +171,16 @@
 .estado-envio--erro  { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.4); color: var(--erro-txt); }
 .estado-envio--aviso { background: var(--vidro); border: 1px solid var(--borda-forte); color: var(--aviso-txt); }
 
-/* ---------- Modal do orçamento ---------- */
-.modal__caixa--orc { width: min(640px, 100%); }
+/* ---------- A página do orçamento (Fase 10) ---------- */
+.orc-regra { margin-bottom: 24px; font-size: var(--corpo); color: var(--texto-suave); max-width: 62ch; }
+.orc-regra b { color: var(--texto); }
+.orc-caixa {
+  max-width: 760px; padding: 32px; border-radius: var(--raio);
+  background: var(--c-fundo); border: 1px solid var(--borda);
+  box-shadow: var(--sombra);
+}
 .modal__titulo { font-size: clamp(24px, 4vw, 32px); font-weight: 800; letter-spacing: -0.025em; margin: 4px 0 8px; }
 .modal__lead { font-size: var(--corpo); color: var(--texto-suave); margin-bottom: 24px; }
-
-/* ---------- CTA dentro da secção ---------- */
-.orc-cta {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px;
-  margin-top: 32px; padding: 24px; border-radius: var(--raio);
-  background: var(--base-2);
-  border: 1px solid var(--linha);
-}
-.orc-cta__txt { flex: 1 1 280px; font-size: var(--corpo); color: var(--texto-suave); }
-.orc-cta__txt b { color: var(--verde); }
-.btn--grande { padding: 16px 32px; font-size: 16px; }
 
 /* =========================================================
    ECRÃ DE SUCESSO
@@ -216,6 +210,9 @@
 }
 .btn--wa:hover { transform: translateY(-3px); }
 .btn--wa svg { width: 19px; height: 19px; flex: none; }
+/* Depois de `.btn--wa`: é o que lhe dá o tamanho de botão em destaque (hero e Contactos). */
+.btn--grande { padding: 18px 32px; font-size: 17px; }
+.btn--grande svg { width: 22px; height: 22px; }
 
 /* =========================================================
    CONFIRMAÇÃO

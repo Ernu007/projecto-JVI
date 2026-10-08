@@ -320,15 +320,6 @@ test('o voo tem uma seta por salto — uma por par de províncias vizinhas', asy
   assert.ok(DURACAO >= 7000, 'o voo passou a ser mais curto do que era');
 });
 
-test('cada agência da JVI é um ponto na província certa, e há uma por rota', () => {
-  const fonte = codigoDe('js/main.js');
-  assert.match(fonte, /for \(const nome of ROTA\) \{\s*const a = agencyPoint\(nome\)/,
-    'o mapa de cobertura não pinta a agência de cada província da rota');
-  for (const nome of ROTA) {
-    assert.ok(agencyPoint(nome), `a rota passa por ${nome} e essa província não tem agência`);
-  }
-});
-
 test('o avião sai da origem de cada salto, não de um ponto fixo', () => {
   const fonte = codigoDe('js/hero-voo.js');
 
@@ -362,13 +353,6 @@ test('os dois canvas preenchem TODOS os anéis, não só o primeiro', () => {
   }
 });
 
-test('o mapa de cobertura desenha o contorno do país', () => {
-  const fonte = codigoDe('js/main.js');
-  assert.match(fonte, /desenharFronteira\(\)/,
-    'a secção de Cobertura nunca desenhou o contorno de Moçambique');
-  assert.match(fonte, /import \{[^}]*\bPAIS\b[^}]*\} from '\.\/mapa-dados\.js'/,
-    'o mapa de cobertura não importa o PAIS');
-});
 /* ---------- Fase 9 (9.2): o voo é de ida e volta, em loop infinito ---------- */
 
 /* O cliente: "ao chegar a Cabo Delgado, ele contorna e volta fazendo o mesmo
@@ -738,18 +722,3 @@ test('9.8: no telemóvel o título não fica à espera de um avião que não est
     'no telemóvel o voo volta a apagar o título quando arranca');
 });
 
-test('9.8: o mapa de cobertura escreve os nomes também no telemóvel', () => {
-  /* As etiquetas só eram desenhadas com o canvas acima de 430 px: num
-     telemóvel o mapa de cobertura era dez pontos sem nome nenhum — e foi
-     por "as províncias já estarem escritas no mapa" que o cartão dos nomes
-     saiu (9.3). */
-  const fonte = codigoDe('js/main.js');
-  assert.doesNotMatch(fonte, /if \(w > 430\)/, 'o mapa de cobertura continua sem nomes abaixo de 430px');
-  assert.match(fonte, /etiqueta\([^;]*rotuloDe\(nome\)/);
-
-  /* Num canvas de 310 px um nome à direita de Pemba saía pela borda: a
-     etiqueta mede-se e vira para o outro lado quando não cabe. */
-  const etiqueta = /function etiqueta\(x, y, t, cor, align\) \{([\s\S]*?)\n  \}/.exec(fonte)?.[1] ?? '';
-  assert.match(etiqueta, /measureText\(t\)\.width/, 'a etiqueta não mede o texto antes de o escrever');
-  assert.match(etiqueta, /> w - /, 'a etiqueta não confere a borda direita do canvas');
-});

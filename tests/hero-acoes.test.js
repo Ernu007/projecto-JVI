@@ -4,35 +4,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /* ---------------------------------------------------------------------------
-   O QUE ESTE FICHEIRO PROTEGE
+   O hero e o telemóvel (Fase 9 → Fase 10)
 
-   A disposição dos três botões do hero nunca esteve escrita em lado
-   nenhum. O `.hero__acoes` era um `display: flex; flex-wrap: wrap` — ou
-   seja, **qual** botão caía **em que** linha dependia do comprimento do
-   texto dos botões. Medido num Chrome real:
-
-     "Pedir orçamento"      204.50px
-     "Falar no WhatsApp"    221.20px
-     "Como chegar à JVI"    217.88px
-     dois gaps de 13px                  ->  669.58px
-     largura do contentor                ->  660px
-
-   669.58 > 660. O terceiro botão não cabia na primeira linha e descia
-   sozinho, com a largura dele, encostado à esquerda por baixo do botão
-   primário de 204.50px: lia-se como botão órfão, e não como uma acção
-   secundária.
-
-   Este ficheiro fixa a DISPOSIÇÃO e não os pixels. A primeira linha leva
-   dois botões e o das direcções ocupa a linha inteira — por declaração,
-   de modo a que voltar a caber ou a não caber depende da largura do texto
-   já não possa trocar o desenho de baixo. E o limite de viewport em que
-   as acções passam a coluna única é conferido contra a largura que sobra
-   dentro do contentor, para nunca apertar dois botões que não caibam.
+   Na Fase 10 o hero ficou curto: título, uma linha, o botão do WhatsApp em
+   destaque e um botão secundário para o orçamento. Saíram as provas, o
+   percurso e o "Como chegar" (que vive só em Contactos). Os testes da
+   disposição dos três botões em duas linhas ficaram sem objecto e saíram;
+   ficam as regras do telemóvel que continuam a valer: alvos de toque de
+   44 px, o mapa por baixo do texto e os botões fixos.
    --------------------------------------------------------------------------- */
 
 const HTML = fs.readFileSync('index.html', 'utf8');
 const CSS = fs.readFileSync(path.join('css', 'styles.css'), 'utf8');
-/* `.btn--wa` vive em orcamento.css, que é carregado depois de styles.css. */
 const CSS_ORC = fs.readFileSync(path.join('css', 'orcamento.css'), 'utf8');
 const CSS_PRIV = fs.readFileSync(path.join('css', 'privacidade.css'), 'utf8');
 
@@ -144,301 +127,28 @@ function accoesDoHero() {
 
 /* ---------- a disposição ---------- */
 
-test('o hero tem três acções e a última é o link das direcções', () => {
-  /* A regra do botão de largura inteira aponta para o ÚLTIMO elemento.
-     Se o link das direcções deixar de ser o último, a linha inteira passa
-     a ser a de outra acção e este ficheiro tem de dar conta. */
+/* ---------- Fase 10: as acções do hero ---------- */
+
+test('10.3: o hero tem duas acções — o WhatsApp em destaque e o orçamento', () => {
   const accoes = accoesDoHero();
-  assert.equal(accoes.length, 3, `o hero tem ${accoes.length} acções — reve a disposição`);
-  const ultima = accoes[accoes.length - 1].atributos;
-  assert.match(ultima, /google\.com\/maps\/dir/,
-    'a última acção do hero deixou de ser o link das direcções');
+  assert.equal(accoes.length, 2);
+  assert.match(accoes[0].atributos, /wa\.me\//, 'a primeira acção do hero deixou de ser o WhatsApp');
+  assert.match(accoes[0].atributos, /class="btn btn--wa btn--grande"/);
+  assert.match(accoes[1].atributos, /href="orcamento\.html"/, 'a segunda acção deixou de levar ao orçamento');
+  assert.doesNotMatch(accoes[1].atributos, /btn--primario|btn--wa/, 'o orçamento do hero compete com o WhatsApp');
 });
 
-test('o botão das direcções ocupa a linha inteira, declarado e não por acaso', () => {
-  const accoes = accoesDoHero();
-  const direccoes = accoes[accoes.length - 1].atributos;
-
-  /* A marcação diz que este botão é um bloco de largura inteira — a mesma
-     coisa que `btn--bloco` significa nos dois outros sítios do site. */
-  assert.match(direccoes, /btn--bloco/,
-    'sem btn--bloco o link das direcções fica com a largura do texto e volta a parecer órfão');
-
-  /* E o CSS tem de transformar essa marcação numa LINHA INTEIRA: ou a
-     largura a 100%, ou uma base de flex a 100%. Sem isto o `flex-wrap`
-     volta a decidir sozinho quem fica em que linha. */
-  assert.ok(larguraInteira(declaracoesBlocoNoHero()),
-    'o CSS não dá ao .btn--bloco do hero a largura toda — a linha continua a ser decidida pelo flex-wrap');
-});
-
-/* ---------- Fase 9 (9.4): metade / metade ---------- */
-
-/** O corpo da regra `.hero__acoes > *` de base — a que está FORA de
- *  qualquer @media. */
-function regraDeTodasAsAccoes() {
-  const media = mediaMaxComRegra('.hero__acoes');
-  const semMedias = media ? CSS.replace(media.bloco, '') : CSS;
-  return /\.hero__acoes\s*>\s*\*\s*\{([^}]*)\}/.exec(semMedias)?.[1];
-}
-
-test('9.4: o orçamento e o WhatsApp ocupam metade cada um da linha das direcções', () => {
-  /* O cliente: "formate os botões do pedir orçamento e falar no WhatsApp
-     para que ocupem metade metade do espaço que o botão como chegar a JVI
-     ocupa". Antes cada um tinha a largura do seu texto (204,5 e 221,2 px)
-     e a linha de cima acabava a meio da de baixo. */
-  const regra = regraDeTodasAsAccoes();
-  assert.ok(regra, 'não há regra de base para `.hero__acoes > *`: os botões ficam com a largura do texto');
-
-  const flex = decl(regra, 'flex')?.match(/^(\S+)\s+(\S+)\s+(.+)$/);
-  assert.ok(flex, `o flex dos botões do hero não tem as três partes: ${decl(regra, 'flex')}`);
-  const [, cresce, , base] = flex;
-
-  /* A base é a mesma para os dois, e os dois crescem por igual: é isso que
-     os faz ter a MESMA largura, tenham o texto que tiverem. */
-  assert.equal(Number(cresce), 1, 'os botões não crescem para encher a linha');
-  const gap = px(decl(corpo('.hero__acoes'), 'gap'));
-  const m = /^calc\(\s*50%\s*-\s*([\d.]+)px\s*\)$/.exec(base);
-  assert.ok(m, `a base dos botões não é metade da linha: ${base}`);
-  /* Duas metades mais o gap dão a linha inteira — a largura do botão das
-     direcções, que é `flex: 1 0 100%`. Nem um píxel a mais, senão o segundo
-     botão caía para a linha de baixo. */
-  assert.equal(2 * Number(m[1]), gap,
-    `duas metades de (50% - ${m[1]}px) mais ${gap}px de gap não dão 100%`);
-
-  /* E a regra das direcções continua a ganhar à regra geral. */
-  assert.ok(larguraInteira(declaracoesBlocoNoHero()));
-  assert.ok(CSS.indexOf('.hero__acoes > .btn--bloco') > CSS.search(/\.hero__acoes\s*>\s*\*\s*\{/),
-    'a regra das direcções vem antes da regra geral');
-});
-
-test('a primeira linha leva dois botões, e os dois cabem no contentor', () => {
-  const contentor = px(decl(corpo('.hero__conteudo'), 'max-width'));
-  const gap = px(decl(corpo('.hero__acoes'), 'gap'));
-
-  /* Fase 9 (9.4): cada botão fica com metade da linha, por isso o que tem
-     de caber em cada metade é o texto do mais largo. */
-  assert.ok(METADE_MINIMA <= (contentor - gap) / 2,
-    `metade do contentor são ${(contentor - gap) / 2}px e o botão mais largo precisa de ${METADE_MINIMA}px`);
-
-  /* O número de botões na primeira linha passa a ser o número de botões
-     que ficam antes do que ocupa a linha inteira: dois. Esta é a soma
-     que tem de caber, e é a que o browser vai juntar. */
-  const par = PAR_MAIS_LARGO + gap;
-  assert.ok(par <= contentor,
-    `dois botões mais o gap dão ${par}px e o contentor dá ${contentor}px — a primeira linha rebenta`);
-
-  /* E porque é que a disposição é declarada: com os três, não cabiam. */
-  const osTres = ORCAMENTO + WHATSAPP + DIRECCOES + 2 * gap;
-  assert.ok(osTres > contentor,
-    `os três botões já cabem em ${contentor}px (${osTres}px) — esta disposição deixou de ser necessária e vale a pena repensa-la`);
-});
-
-test('o botão primário continua a ser o primeiro, e não o que ocupa a linha', () => {
-  const accoes = accoesDoHero();
-  const [primeira, , ultima] = accoes;
-  assert.match(primeira.atributos, /btn--primario/,
-    'a acção primária do hero deixou de ser a primeira');
-  assert.doesNotMatch(ultima.atributos, /btn--primario/,
-    'a acção primária passou a ocupar a linha inteira — o peso visual inverteu-se');
-});
-
-/* ---------- o limite de viewport ---------- */
-
-test('abaixo do limite as acções do hero são uma coluna de botões inteiros', () => {
-  const media = mediaMaxComRegra('.hero__acoes');
-  assert.ok(media,
-    'não há nenhuma @media que ponha as acções do hero em coluna única — a 320px ficam ragged à esquerda');
-
-  /* Todas, e não só a última: a coluna única existe para o telemóvel. */
-  assert.match(media.bloco, /\.hero__acoes\s*>\s*\*/,
-    'a @media não se aplica a todos os botões do hero');
-  assert.ok(larguraInteira(declaracoes(media.corpo)),
-    'a coluna única não dá a largura toda aos botões do hero');
-});
-
-test('o limite da coluna única não aperta dois botões que não cabem', () => {
-  const media = mediaMaxComRegra('.hero__acoes');
-  assert.ok(media, 'não há @media para ler o limite');
-
-  const contentorMax = px(decl(corpo('.hero__conteudo'), 'max-width'));
-  const margem = px(decl(corpo('.container'), 'padding-inline')) * 2;
-  const gap = px(decl(corpo('.hero__acoes'), 'gap'));
-
-  /* Logo acima do limite a primeira linha volta a ter dois botões. A
-     largura disponível aí é o contentor menos as margens laterais, e tem
-     de chegar para o par mais largo. */
-  const disponivel = Math.min(media.limite + 1, contentorMax) - margem;
-  const necessario = PAR_MAIS_LARGO + gap;
-  assert.ok(disponivel >= necessario,
-    `a ${media.limite + 1}px de viewport ficam ${disponivel}px dentro do contentor e o par mais largo precisa de ${necessario}px`);
-
-  /* Fase 9 (9.4): com metade / metade a conta é mais exigente — cada
-     metade tem de levar o texto do botão MAIS largo, senão o `nowrap`
-     empurra o segundo para a linha de baixo com outra largura. */
-  const metade = (disponivel - gap) / 2;
-  assert.ok(metade >= METADE_MINIMA,
-    `a ${media.limite + 1}px de viewport cada metade tem ${metade}px e "Falar no WhatsApp" precisa de ${METADE_MINIMA}px`);
-});
-
-/* ---------- Fase 9 (9.8): o hero no telemóvel ---------- */
-
-/** A altura de um `.btn`: o padding vertical mais uma linha de texto. */
-function alturaDoBotao(regraBtn, alturaDeLinha) {
-  const [vertical] = decl(regraBtn, 'padding').split(/\s+/);
-  return 2 * px(vertical) + px(decl(regraBtn, 'font-size')) * alturaDeLinha;
-}
-
-test('9.8: no telemóvel as três acções do hero são coluna, cabem e não quebram', () => {
-  const media = mediaMaxComRegra('.hero__acoes');
-  const margem = px(decl(corpo('.container'), 'padding-inline')) * 2;
-
-  for (const viewport of [MOVEL, MOVEL_ESTREITO]) {
-    assert.ok(viewport <= media.limite, `a ${viewport}px o hero ainda tenta pôr dois botões lado a lado`);
-    const disponivel = viewport - margem;
-    for (const [nome, largura] of [['Pedir orçamento', ORCAMENTO], ['Falar no WhatsApp', WHATSAPP], ['Como chegar à JVI', DIRECCOES]]) {
-      assert.ok(largura <= disponivel,
-        `a ${viewport}px "${nome}" precisa de ${largura}px e só há ${disponivel}px: o texto sai do botão`);
-    }
-  }
-  /* O texto de um botão nunca parte em duas linhas. */
-  assert.match(decl(corpo('.btn'), 'white-space') ?? '', /nowrap/);
-});
-
-test('9.8: os botões do hero são alvos de toque de pelo menos 44 px', () => {
-  const alturaDeLinha = Number(decl(corpo('body'), 'line-height'));
-  assert.ok(alturaDeLinha > 1, 'não consegui ler o line-height do body');
-  const altura = alturaDoBotao(corpo('.btn'), alturaDeLinha);
-  assert.ok(altura >= TOQUE, `um .btn tem ${altura.toFixed(1)}px de altura`);
-
-  /* O WhatsApp é `.btn--wa`, que redeclara o padding e a letra: tem de dar
-     a mesma altura dos outros dois, senão a coluna fica desigual. */
+test('10.3: o WhatsApp do hero tem o verde do WhatsApp, liso e sem sombra', () => {
   const wa = corpo('.btn--wa', CSS_ORC);
-  assert.ok(wa, 'não encontrei .btn--wa');
-  assert.equal(alturaDoBotao(wa, alturaDeLinha), altura,
-    'o botão do WhatsApp do hero não tem a altura dos outros dois');
+  assert.match(decl(wa, 'background'), /^var\(--wa\)$/);
+  assert.equal(decl(wa, 'box-shadow'), undefined, 'o WhatsApp ganhou sombra');
 });
 
-/* ---------- Fase 9 (9.6): o WhatsApp do hero fica verde ---------- */
-
-test('9.6: o WhatsApp do hero tem o verde do WhatsApp dos contactos', () => {
-  const [, whatsapp] = accoesDoHero();
-  assert.match(whatsapp.atributos, /wa\.me\//, 'a segunda acção do hero deixou de ser o WhatsApp');
-  assert.match(whatsapp.atributos, /class="btn btn--wa"/,
-    'o WhatsApp do hero não usa a classe do botão verde dos contactos');
-  assert.doesNotMatch(whatsapp.atributos, /btn--vidro/, 'o WhatsApp do hero continua em vidro');
-
-  /* É a MESMA classe do botão do rodapé — o "da última página" —, e a cor
-     vem do mesmo token. */
-  const rodape = /<div class="rodape__accoes">([\s\S]*?)<\/div>/.exec(HTML)?.[1] ?? '';
-  assert.match(rodape, /<a class="btn btn--wa"[^>]*wa\.me\//, 'o WhatsApp do rodapé mudou de classe');
-  assert.match(decl(corpo('.btn--wa', CSS_ORC), 'background'), /^var\(--wa\)$/);
-});
-
-test('9.6: o orçamento continua a ser a única acção primária do hero, e a mais forte', () => {
-  /* O site tem uma acção primária por ecrã (D19). O WhatsApp verde não é
-     uma segunda primária: é o verde da marca WhatsApp, que é outro verde. */
-  const accoes = accoesDoHero();
-  assert.equal(accoes.filter((a) => /btn--primario/.test(a.atributos)).length, 1);
-  assert.match(accoes[0].atributos, /btn--primario/);
-  assert.doesNotMatch(accoes[1].atributos, /btn--primario/);
-
-  /* Fase 10 (10.1): sem degradês nem brilhos. O primário é o verde da
-     marca; o do WhatsApp é o verde do WhatsApp — duas cores lisas. */
-  const primario = corpo('.btn--primario');
-  assert.match(decl(primario, 'background'), /^var\(--verde-marca\)$/);
-  const wa = corpo('.btn--wa', CSS_ORC);
-  assert.equal(decl(wa, 'box-shadow'), undefined, 'o WhatsApp ganhou sombra: compete com o primário');
-  assert.doesNotMatch(decl(wa, 'background'), /gradient|--verde/);
-});
-
-/* ---------- Fase 9 (9.7): o WhatsApp do rodapé do tamanho do "Como chegar" ---------- */
-
-test('9.7: no rodapé o WhatsApp tem a largura e a altura do "Como chegar à JVI"', () => {
-  const maps = corpo('.btn-maps');
-  const wa = corpo('.rodape__accoes .btn--wa');
-  assert.ok(maps && wa, 'falta a regra de um dos dois botões do rodapé');
-
-  /* A mesma caixa, declaração a declaração: é isso que dá a mesma altura
-     e a mesma largura em qualquer ecrã. */
-  for (const prop of ['flex-direction', 'gap', 'width', 'padding-block', 'border-radius']) {
-    assert.equal(decl(wa, prop), decl(maps, prop), `${prop}: WhatsApp ${decl(wa, prop)} / Como chegar ${decl(maps, prop)}`);
-  }
-  assert.equal(px(decl(wa, 'width')), 100, 'o WhatsApp do rodapé não ocupa a linha inteira');
-
-  /* O botão do Maps é `btn--vidro`, que tem 1px de contorno. Sem um
-     contorno igual (transparente), o WhatsApp ficava 2px mais baixo —
-     medido no Chrome: 106,75 contra 108,75px. */
-  const contorno = (regra) => px(decl(regra, 'border'));
-  assert.equal(contorno(wa), contorno(corpo('.btn--vidro')),
-    'o WhatsApp do rodapé não tem o contorno que iguala a altura à do "Como chegar"');
-
-  /* E o ícone tem a mesma altura, que é o que faz a altura do botão. */
-  const alturaIcone = (sel) => px(decl(new RegExp(`${escapar(sel)}\\s*\\{([^}]*)\\}`).exec(CSS)?.[1] ?? '', 'height'));
-  assert.equal(alturaIcone('.rodape__accoes .btn--wa svg'), alturaIcone('.rodape__accoes .btn-maps svg'));
-
-  /* Nada o volta a encolher para a largura do texto, em nenhum ecrã. */
-  const semComentarios = CSS.replace(/\/\*[\s\S]*?\*\//g, ' ');
-  assert.doesNotMatch(semComentarios, /\.rodape__accoes \.btn--wa\s*\{[^}]*justify-self\s*:\s*start/,
-    'o WhatsApp do rodapé continua encostado à esquerda, com a largura do texto');
-});
-
-/* ---------- Fase 9 (9.8): o resto do ecrã, no telemóvel ---------- */
-
-/* "Faça o formato para a versão mobile também, pois é nela que 99% dos
-   clientes irão ver a página!" Os limites daqui para baixo foram medidos
-   num Chrome a 360 × 740 antes de serem escritos: o botão de orçamento do
-   topo tinha 40,6 px de altura, os links do rodapé 20,6 px, o fechar do
-   pop-up 40 px, o mapa do hero estava por trás do texto, e os botões
-   fixos tapavam uma faixa de 156 px que nem se via. */
-
-/** A regra de um selector dentro da `@media (max-width: …)` que a tem. */
 const noTelemovel = (selector, folha = CSS) => {
   const media = mediaMaxComRegra(selector, folha);
   assert.ok(media, `não há regra de telemóvel para ${selector}`);
   return media;
 };
-
-test('9.8: o botão de orçamento do topo é um alvo de 44 px em qualquer telemóvel', () => {
-  /* Abaixo de 900 px o botão encolhe (padding 10 px, letra 13,5 px) e
-     ficava com 42,3 px; abaixo de 380 px, com 40,6 px. */
-  for (const m of CSS.matchAll(/@media\s*\(\s*max-width:\s*(\d+)px\s*\)\s*\{\s*(?:\/\*[\s\S]*?\*\/\s*)?\.header__cta \.btn\s*\{([^}]*)\}/g)) {
-    assert.ok(px(decl(m[2], 'min-height')) >= TOQUE,
-      `abaixo de ${m[1]}px o botão de orçamento do topo não tem altura mínima`);
-  }
-  const media = noTelemovel('.header__cta .btn');
-  assert.ok(media.limite >= MOVEL);
-  assert.ok(px(decl(media.corpo, 'min-height')) >= TOQUE);
-
-  /* O botão do menu, ao lado, e a marca. */
-  /* A regra própria do botão, e não `.header__cta + .menu-btn`. */
-  const menu = /^\.menu-btn \{([^}]*)\}/m.exec(CSS)?.[1];
-  assert.ok(px(decl(menu, 'width')) >= TOQUE && px(decl(menu, 'height')) >= TOQUE);
-  const marca = corpo('.brand');
-  assert.ok(px(decl(marca, 'min-width')) >= TOQUE && px(decl(marca, 'min-height')) >= TOQUE,
-    'o logótipo é um link de 38 px de largura');
-});
-
-test('9.8: o cabeçalho fixo não come o ecrã pequeno nem tapa os títulos', () => {
-  const vertical = (regra) => px(decl(regra, 'padding'));
-  const botao = px(decl(noTelemovel('.header__cta .btn').corpo, 'min-height'));
-
-  /* Em repouso: o padding e o logótipo. Preso (depois de rolar): o padding
-     menor e o botão, que passa a ser o mais alto. */
-  const repouso = 2 * vertical(corpo('.header')) + Math.max(px(decl(corpo('.brand__logo'), 'height')), botao);
-  const preso = 2 * vertical(corpo('.header--preso')) + Math.max(px(decl(corpo('.header--preso .brand__logo'), 'height')), botao);
-
-  /* Um telemóvel pequeno tem ~640 px de altura útil. O cabeçalho preso —
-     o que acompanha a página toda — fica abaixo de um décimo disso. */
-  const ECRA_BAIXO = 640;
-  assert.ok(preso <= ECRA_BAIXO * 0.1, `o cabeçalho preso tem ${preso}px: ${(100 * preso / ECRA_BAIXO).toFixed(0)}% de um ecrã de ${ECRA_BAIXO}px`);
-  assert.ok(repouso <= ECRA_BAIXO * 0.125, `o cabeçalho em repouso tem ${repouso}px`);
-
-  /* E não tapa conteúdo: quem salta para uma secção pelo menu encontra o
-     título abaixo do cabeçalho, porque cada secção começa com mais espaço
-     do que a altura dele. */
-  const espaco = px(/clamp\(\s*(\d+)px/.exec(decl(corpo('.seccao'), 'padding'))?.[1]);
-  assert.ok(espaco >= preso, `as secções começam com ${espaco}px e o cabeçalho preso tem ${preso}px: tapa o título`);
-});
 
 test('9.8: os botões fixos não roubam toques ao conteúdo que não tapam', () => {
   /* O contentor dos três botões media 156 × 162 px — a largura das
@@ -449,41 +159,6 @@ test('9.8: os botões fixos não roubam toques ao conteúdo que não tapam', () 
     'a caixa invisível dos botões fixos intercepta os toques');
   assert.match(decl(corpo('.fixo__btn'), 'pointer-events') ?? '', /^auto$/,
     'os botões fixos deixaram de se poder tocar');
-});
-
-test('9.8: no telemóvel os botões fixos são uma fila em baixo, e o rodapé guarda-lhes o lugar', () => {
-  /* Em coluna tapavam 162 px de altura na borda direita — o fim dos três
-     botões do hero, de uma vez. Em fila tapam 48 px, num canto. */
-  const fixos = noTelemovel('.fixos');
-  assert.match(decl(fixos.corpo, 'flex-direction') ?? '', /^row$/, 'os botões fixos continuam em coluna no telemóvel');
-  assert.ok(fixos.limite >= MOVEL);
-
-  const dentro = (sel) => new RegExp(`${escapar(sel)}\\s*\\{([^}]*)\\}`).exec(fixos.bloco)?.[1];
-  const botao = px(decl(dentro('.fixo__btn'), 'height'));
-  assert.ok(botao >= TOQUE, `os botões fixos têm ${botao}px no telemóvel`);
-  assert.equal(px(decl(dentro('.fixo__btn'), 'width')), botao);
-  /* As legendas só aparecem com o rato por cima: num ecrã de toque não
-     aparecem nunca, e só alargavam a caixa. */
-  assert.match(decl(dentro('.fixo__txt'), 'display') ?? '', /^none$/);
-
-  /* O fim da página não fica por baixo deles: o rodapé acaba com espaço
-     para a fila (a altura do botão mais a distância ao fundo, duas vezes). */
-  const fundo = px(decl(fixos.corpo, 'bottom'));
-  const reserva = px(decl(dentro('.rodape'), 'padding-bottom'));
-  assert.ok(reserva >= botao + 2 * fundo,
-    `o rodapé guarda ${reserva}px e a fila de botões ocupa ${botao + 2 * fundo}px: tapa os links legais`);
-});
-
-test('9.8: os alvos pequenos do rodapé e dos diálogos chegam aos 44 px', () => {
-  /* Links legais do rodapé: eram texto de 12,5 px, com 20,6 px de altura. */
-  const links = corpo('.rodape__links a');
-  assert.ok(px(decl(links, 'min-height')) >= TOQUE, 'os links do rodapé não têm altura de toque');
-  assert.match(decl(links, 'display') ?? '', /flex/, 'sem display flex o min-height não se aplica a um link em linha');
-
-  /* Os botões de fechar: 40 px. */
-  for (const [nome, regra] of [['.modal__fechar', corpo('.modal__fechar')], ['.legal__fechar', corpo('.legal__fechar', CSS_PRIV)]]) {
-    assert.ok(px(decl(regra, 'width')) >= TOQUE && px(decl(regra, 'height')) >= TOQUE, `${nome} tem menos de 44 px`);
-  }
 });
 
 test('9.8: no telemóvel o mapa do hero sai de trás do texto', () => {
@@ -519,10 +194,46 @@ test('9.8: os nomes dos passos do formulário não ficam cortados a 360 px', () 
   assert.ok(passo.limite >= MOVEL);
   assert.match(decl(passo.corpo, 'flex-direction') ?? '', /^column$/);
 
-  /* E o pop-up não gasta um terço do ecrã em margens: a 360 px os campos
-     ficam com pelo menos 290 px. */
-  const fora = px(decl(noTelemovel('.modal', CSS_ORC).corpo, 'padding'));
-  const [, lateral] = decl(noTelemovel('.modal__caixa', CSS_ORC).corpo, 'padding').split(/\s+/);
-  const campo = MOVEL - 2 * fora - 2 * px(lateral) - 2;
+  /* E a caixa do formulário não gasta um terço do ecrã em margens: a
+     360 px os campos ficam com pelo menos 290 px. */
+  const lateral = px(decl(noTelemovel('.orc-caixa', CSS_ORC).corpo, 'padding').split(/\s+/)[1]);
+  const campo = MOVEL - 2 * 20 - 2 * lateral - 2; /* 20 px de margem do .container no telemóvel */
   assert.ok(campo >= 290, `a 360px os campos do formulário têm ${campo}px`);
+});
+
+test('10.5: a marca e o botão do menu são alvos de 44 px', () => {
+  const menu = /^\.menu-btn \{([^}]*)\}/m.exec(CSS)?.[1];
+  assert.ok(px(decl(menu, 'width')) >= TOQUE && px(decl(menu, 'height')) >= TOQUE);
+  const marca = corpo('.brand');
+  assert.ok(px(decl(marca, 'min-width')) >= TOQUE && px(decl(marca, 'min-height')) >= TOQUE,
+    'o logótipo é um link de 38 px de largura');
+});
+
+/* ---------- Fase 10 (10.5): os botões fixos ---------- */
+
+test('10.5: os botões fixos são dois, pequenos, numa fila, e o fim da página guarda-lhes o lugar', () => {
+  /* Só WhatsApp e telefone: o Gmail saiu. */
+  assert.equal((HTML.match(/class="fixo fixo--/g) ?? []).length, 2);
+  assert.doesNotMatch(HTML, /fixo--mail|ico-gmail/);
+
+  assert.match(decl(corpo('.fixos'), 'flex-direction') ?? '', /^row$/, 'os botões fixos não estão numa fila');
+  const botao = px(decl(corpo('.fixo__btn'), 'height'));
+  assert.ok(botao >= TOQUE && botao <= 52, `os botões fixos têm ${botao}px: ou não se tocam, ou já não são pequenos`);
+  assert.equal(px(decl(corpo('.fixo__btn'), 'width')), botao);
+
+  /* O `body` reserva a faixa: o botão, a margem de baixo e uma folga igual. */
+  const fundo = px(decl(corpo('.fixos'), 'bottom'));
+  const faixa = px(/--faixa:\s*(\d+)px/.exec(CSS)?.[1]);
+  assert.ok(faixa >= botao + 2 * fundo,
+    `a faixa reservada é de ${faixa}px e os botões ocupam ${botao + 2 * fundo}px: tapam o fim da página`);
+  assert.match(decl(corpo('body'), 'padding-bottom') ?? '', /var\(--faixa\)/,
+    'o body não reserva a altura da faixa dos botões fixos');
+});
+
+test('10.5: os links legais do rodapé e o botão de fechar da privacidade chegam aos 44 px', () => {
+  const links = corpo('.rodape__links a');
+  assert.ok(px(decl(links, 'min-height')) >= TOQUE, 'os links do rodapé não têm altura de toque');
+  assert.match(decl(links, 'display') ?? '', /flex/, 'sem display flex o min-height não se aplica a um link em linha');
+  const fechar = corpo('.legal__fechar', CSS_PRIV);
+  assert.ok(px(decl(fechar, 'width')) >= TOQUE && px(decl(fechar, 'height')) >= TOQUE, '.legal__fechar tem menos de 44 px');
 });

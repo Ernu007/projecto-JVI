@@ -69,7 +69,7 @@ test('planoEnvio aceita um segundo número de telefone', () => {
 /* O ecrã de sucesso tem de ter os DOIS links, porque o window.open é
    um bónus e não uma entrega. */
 test('o ecra de sucesso tem um link para a JVI e outro para o cliente', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
+  const html = fs.readFileSync('orcamento.html', 'utf8');
   const bloco = /<div class="envio-ok"[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? '';
   assert.ok(bloco, 'não encontrei o ecrã de sucesso');
   assert.match(bloco, /data-ok-empresa/,
@@ -92,7 +92,7 @@ test('o ecra de sucesso tem um link para a JVI e outro para o cliente', () => {
 --------------------------------------------------------------------------- */
 
 test('o campo do peso NÃO é type=number, senão a vírgula nunca chega ao JS', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
+  const html = fs.readFileSync('orcamento.html', 'utf8');
   const campo = /<input[^>]*id="orcPeso"[^>]*>/.exec(html)?.[0];
   assert.ok(campo, 'não encontrei o campo do peso');
   assert.doesNotMatch(campo, /type="number"/,
@@ -103,7 +103,7 @@ test('o campo do peso NÃO é type=number, senão a vírgula nunca chega ao JS',
 });
 
 test('os campos de texto do formulário têm maxlength', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
+  const html = fs.readFileSync('orcamento.html', 'utf8');
   /* Sem maxlength, uma descrição de 5000 caracteres passa o formulário,
      é truncada a 1200 em silêncio no registo, e um corpo > 20 KB leva
      a 413 — o que o front-end traduz por "registo indisponível". */

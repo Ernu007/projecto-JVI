@@ -814,3 +814,91 @@ próprio documento, os contactos antigos da JVI — "+258 87 555 8005 / +258 84 
 0012" e "IVA 17%". Agora que a fotografia é maior e o 84 470 0012 voltou a ser um
 número da empresa, o outro número lê-se ao lado dele. É uma fotografia real e não
 foi alterada; se o cliente preferir, tira-se essa fotografia do carrossel.
+
+## Fase 10 — redesenho: cinco páginas, verde e preto (08/10/2026)
+
+Origem: `BRIEFING-FASE10-REDESIGN.md` (feedback do cliente em notas de voz e
+8 prints; decisões do Ernu a 08/10/2026, que prevalecem). O plano já estava
+aprovado e foi executado sem voltar a perguntar; o que era ambíguo ficou
+decidido aqui.
+
+### D43 — cinco páginas HTML estáticas (revoga o D6)
+
+O D6 dizia "sem expansão para 6-8 páginas; uma página única converte melhor".
+A Fase 10 revoga-o: o cliente achou a página única "demasiado robusta" e o
+Ernu aprovou **cinco ficheiros HTML estáticos** — `index.html`, `servicos.html`,
+`sobre.html`, `orcamento.html`, `contactos.html` —, sem SPA nem framework.
+O número é o tecto do briefing (máximo de 5), não a sugestão de 6-8 do
+`BRIEFING-JVI.md`.
+
+| Decisão | Razão |
+|---|---|
+| Cabeçalho, menu e rodapé iguais nas cinco; o `aria-current="page"` marca a página actual | Uma só navegação; o `tests/fase10.test.js` compara as cinco, byte a byte, sem a marca. |
+| Menu: Início, Serviços, Sobre nós, Orçamento, Contactos — **sem o ponto final** das tabs da Fase 8B | O ponto final era o estilo ditado para os 7 itens antigos (D29). Os cinco nomes vêm do Ernu, escritos sem ponto, e o cliente pediu agora um site sóbrio. Se o cliente quiser o ponto de volta é uma linha no HTML. |
+| O botão "Pedir orçamento" saiu do cabeçalho | Pedido explícito: o cliente riscou-o a vermelho (duplica o CTA do hero e aperta o cabeçalho no telemóvel). O orçamento tem o seu item de menu. |
+| O cabeçalho é preto em todas as páginas (já não é transparente sobre o hero) | Nas páginas interiores não há hero por baixo; um cabeçalho transparente deixava o menu sobre texto. Preto é a cor da marca. |
+| As páginas interiores abrem com uma faixa preta (`.pagina-topo`): etiqueta, h1, uma linha | Dá identidade à página sem custo de scroll, e é o único h1. |
+| O gerador das páginas vive em `.tmp/` (não vai para o git) | Só o HTML final é fonte de verdade; o cabeçalho/rodapé repetidos estão guardados por teste. |
+| `tools/publicar.py` ganha a lista explícita das cinco páginas; `sitemap.xml` tem as cinco URL | Uma página nova passa a exigir uma decisão. |
+
+### D44 — o formulário vive na página Orçamento, já não num pop-up (revoga o D9)
+
+O D9 dizia "o formulário vive só no modal". Como a página `orcamento.html` é
+agora **o** sítio do pedido, o formulário monta-se inline em `#orcRaiz`, numa
+caixa de 760 px, e o pop-up desapareceu (`#modal`, `abrirModal`, `data-abrir-orc`,
+o `inert` do modal). Ficam como diálogos a **confirmação** antes do envio
+(só em `orcamento.html`) e a **política de privacidade** (em todas as páginas,
+porque o rodapé a linka). Nas outras páginas não há `#orcRaiz` e o `main.js`
+nem monta o formulário. A contagem anti-spam dos 3 s (D10) passa a contar desde
+que a página abre. **Regras de preço, mensagens de WhatsApp, número de envio e
+ausência de campo de destino: intactos** — nenhum ficheiro de `js/orcamento.js`,
+`js/precos.js` ou `functions/submit.js` foi tocado.
+
+### D45 — o que sai, para cada informação aparecer uma só vez
+
+| Saiu | Onde fica a informação |
+|---|---|
+| Secção Cobertura (mapa + lista de cidades) e o `iniciarMapa` do `main.js` | O mapa do hero é o **único** mapa do site e já escreve as cidades. As cidades ficam também no JSON-LD (`areaServed`). |
+| Diferenciais ("Porquê a JVI"), citação, cartões de credenciais, "10+ anos" | "Mais de dez anos" diz-se uma vez, na faixa de Sobre nós. |
+| `.hero__provas` (10+ anos, licença, aeroportos) e o percurso no hero | Pedido explícito do Ernu. O percurso fica só em Contactos, junto do "Como chegar". |
+| Bloco SEO de texto do rodapé; "Como chegar" e WhatsApp do rodapé | O rodapé fica legal e mínimo: logótipo, NUEL/NUIT/licença, © e Política de Privacidade. |
+| Descrição longa, cartões de serviço de 4, fluxo de 5 etapas com linha animada | Serviços: carga aérea e rodoviária + "Da recolha à entrega" em 4 passos curtos. |
+| FAQ de 6 perguntas | 4 em Orçamento. Saíram "Quanto custa" (o preço está escrito uma vez, no topo da página) e "Como acompanho" (repetia o WhatsApp). |
+| Carta de apresentação como imagem grande | Fica um botão-link para o PDF em Sobre nós. |
+| Visão / Missão / Objectivo | Ficam, em três linhas curtas, em Sobre nós. |
+
+A resposta da FAQ "Como posso pagar?" dizia "cartão de crédito" e "numerário",
+que o formulário já não oferece desde a 8C; passou a dizer o que o formulário
+oferece (dinheiro móvel e transferência bancária; no envio ou no levantamento).
+
+### D46 — contactos mantêm-se como estão (aviso)
+
+Os números do site continuam os do D35/D38: **WhatsApp +258 87 806 6265** (todos
+os `wa.me` e o envio do formulário) e **chamadas +258 84 470 0012** (`tel:`).
+O `BRIEFING-JVI.md` e o da Fase 10 falam em **+258 84 793 5035** como número do
+envio; esse número é o que o D35 substituiu a pedido do cliente e o
+`tests/numero.test.js` recusa-o em ficheiros vivos. Seguindo "NÃO alteres o
+número de envio do formulário", **não se mexeu em nenhum número**. Fica para o
+Ernu confirmar qual é o actual.
+
+### D47 — paleta: verde e preto, corpo claro (10.1)
+
+Tokens em `css/styles.css`; o contraste mede-se com `tools/contraste.py`.
+
+| Token | Valor | Uso | Contraste |
+|---|---|---|---|
+| `--base` | `#0B0B0C` | cabeçalho, hero, rodapé, diálogos (preto da marca) | texto `#F4F4F5` 17,9:1 |
+| `--verde` / `--verde-marca` | `#A9CF44` | acento sobre preto; fundo de botão com texto `#0B0B0C` | sobre preto 11,0:1; texto preto sobre o verde 11,0:1 |
+| `--c-fundo` / `--c-fundo-2` | `#FFFFFF` / `#F7F8FA` | corpo da página (`.seccao`) | — |
+| `--c-texto` | `#0B0B0C` | texto sobre claro | 19,7:1 |
+| `--c-texto-suave` / `--c-texto-fraco` | `#3F4348` / `#565C63` | texto secundário sobre claro | 10,0:1 / 6,8:1 |
+| `--c-verde` | `#476608` | texto verde, ícones e bordas sobre claro | 6,6:1 |
+| `--wa` | `#25D366` | só os botões do WhatsApp | texto `#05230F`: 8,5:1 |
+
+O verde `#A9CF44` sobre branco dá 1,9:1 e **não** é texto sobre claro: um teste
+(`10.1: o texto do tema claro…`) mede-o e falha se alguém o usar assim. Sai o
+laranja (`--laranja`, `.btn--laranja`, o hub do mapa e do voo passam a branco),
+saem as cores do Google nos botões fixos e os degradês. As secções do corpo
+vestem o tema claro por `.seccao` re-declarando os tokens derivados (custom
+properties resolvem-se onde se declaram, por isso `--linha` & afins têm de ser
+declarados outra vez); os diálogos, que estão fora das secções, ficam escuros.

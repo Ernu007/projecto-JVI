@@ -6,6 +6,7 @@ import {
   JVI_WHATSAPP, JVI_TELEFONE, normalizarTelefone, telefoneLegivel, linkWa,
 } from '../js/orcamento.js';
 import { telefoneCallback, RE_TEL, validar } from '../functions/submit.js';
+import { SITE, PAGINAS, NOMES } from './paginas.js';
 
 /* ---------------------------------------------------------------------------
    O NÚMERO DA EMPRESA MUDOU (D35 em docs/decisoes.md)
@@ -37,7 +38,7 @@ const LEGIVEL_VOZ = '+258 84 470 0012';
 /** Ficheiros de texto vivos: o que se publica, o servidor, os testes e o
  *  que diz a quem mantém o site onde o número está. */
 function vivos() {
-  const lista = ['index.html', 'carta/index.html', 'README.md', '.env.example'];
+  const lista = [...NOMES, 'carta/index.html', 'README.md', '.env.example'];
   for (const dir of ['js', 'functions', 'tests', 'carta']) {
     for (const f of fs.readdirSync(dir)) {
       if (/\.(js|mjs|html|css)$/.test(f)) lista.push(path.join(dir, f).replace(/\\/g, '/'));
@@ -71,8 +72,8 @@ test('9.1: ha uma constante para as chamadas, e nao e a do WhatsApp', () => {
   assert.notEqual(JVI_TELEFONE, JVI_WHATSAPP);
 });
 
-const HTML = fs.readFileSync('index.html', 'utf8');
-const LD = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(HTML)[1]);
+const HTML = SITE;
+const LD = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(PAGINAS['index.html'])[1]);
 
 test('9.1: todos os wa.me levam o numero do WhatsApp e todos os tel: o das chamadas', () => {
   const wa = [...HTML.matchAll(/https:\/\/wa\.me\/(\d+)/g)].map((m) => m[1]);
@@ -102,24 +103,25 @@ test('9.1: o JSON-LD leva o numero de chamadas como telephone, e o WhatsApp a pa
 });
 
 test('9.1: os contactos mostram os dois numeros, cada um com o seu rotulo', () => {
-  const cont = /<section\b[^>]*id="contactos"[^>]*>([\s\S]*?)<\/section>/.exec(HTML)[1];
+  const cont = /<section\b[^>]*id="contactos"[^>]*>([\s\S]*?)<\/section>/.exec(PAGINAS['contactos.html'])[1];
+
+  /* WhatsApp: o botão grande, e por baixo o número com a nota "só mensagens". */
+  const wa = /<a class="btn btn--wa[^"]*" href="(https:\/\/wa\.me\/[^"]+)"/.exec(cont);
+  assert.ok(wa, 'os contactos não têm o botão do WhatsApp');
+  const nota = /<p class="cont-numero">([^<]*)<span>([^<]*)<\/span>/.exec(cont);
+  assert.ok(nota, 'os contactos não escrevem o número do WhatsApp');
+  assert.equal(nota[1].trim(), LEGIVEL);
+  /* É a metade do rótulo que impede a pessoa de ficar à espera numa
+     chamada que ninguém atende. */
+  assert.match(nota[2], /mensagens/i);
+
   const itens = [...cont.matchAll(/<a class="cont-item" href="([^"]+)"[^>]*>[\s\S]*?<span><b>([^<]*)<\/b>([^<]*)<\/span>\s*<\/a>/g)]
     .map((m) => ({ href: m[1], rotulo: m[2], valor: m[3] }));
-
-  const wa = itens.find((i) => i.href.startsWith('https://wa.me/'));
-  assert.ok(wa, 'os contactos não têm o item do WhatsApp');
-  assert.match(wa.rotulo, /WhatsApp/);
-  assert.equal(wa.valor, LEGIVEL);
-
   const tel = itens.find((i) => i.href.startsWith('tel:'));
   assert.ok(tel, 'os contactos não têm o item das chamadas');
   assert.match(tel.rotulo, /chamadas/i, 'o rótulo tem de dizer que este é o número para ligar');
   assert.doesNotMatch(tel.rotulo, /WhatsApp/);
   assert.equal(tel.valor, LEGIVEL_VOZ);
-
-  /* E o do WhatsApp diz que não é para ligar: é a metade do rótulo que
-     impede a pessoa de ficar à espera numa chamada que ninguém atende. */
-  assert.match(wa.rotulo, /mensagens/i);
 });
 
 test('9.1: todo o numero escrito por extenso e um dos dois, e o papel bate certo', () => {

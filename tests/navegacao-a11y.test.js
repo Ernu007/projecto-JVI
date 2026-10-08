@@ -64,7 +64,7 @@ test('existe um skip link como primeiro elemento focavel do body', () => {
 
 test('todo o alvo de link interno é focável', () => {
   const alvos = alvosInternos();
-  assert.ok(alvos.size >= 7, `esperava varios alvos internos, achei ${alvos.size}`);
+  assert.ok(alvos.size >= 1, `esperava ao menos o alvo do skip link, achei ${alvos.size}`);
 
   for (const id of alvos) {
     const tag = tagComId(id);

@@ -1,8 +1,7 @@
 /* =========================================================
-   JVI Carga & Serviços — Landing Page
+   JVI Carga & Serviços — site de 5 páginas (Fase 10)
    ========================================================= */
 
-const REDUCIDO = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* =========================================================
    HEADER + MENU MÓVEL + BARRA DE PROGRESSO
@@ -77,70 +76,6 @@ window.addEventListener('scroll', aoDeslocar, { passive: true });
 aoDeslocar();
 
 /* =========================================================
-   ANIMAÇÕES AO SCROLL (IntersectionObserver)
-   ========================================================= */
-const alvos = document.querySelectorAll('.revelar');
-/* `IntersectionObserver` no topo do módulo, sem guarda, é a mesma
-   armadilha do `raizOrc`: um `new` que rebenta aqui aborta a avaliação
-   do módulo e mata tudo o que está DEBAIXO — o modal do orçamento, o
-   diálogo legal, a confirmação, o mapa e a galeria. Numa WebView
-   antiga, ou com `dom.intersectionobserver` desligado, uma referência a
-   partir do topo do módulo é um ReferenceError.
-
-   Três sítios do projecto usam o observador. Passam todos pela mesma
-   constante, para não ficar um deles de fora — que é exactamente como
-   o das etapas ficou. */
-const TEM_IO = 'IntersectionObserver' in window;
-if (TEM_IO && !REDUCIDO) {
-  const obs = new IntersectionObserver(
-    (entradas) => {
-      entradas.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.dataset.visivel = 'true';
-          obs.unobserve(e.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-  );
-  alvos.forEach((el) => obs.observe(el));
-} else {
-  alvos.forEach((el) => (el.dataset.visivel = 'true'));
-}
-
-/* =========================================================
-   ETAPAS — destaca a etapa visível e desenha a linha
-   ========================================================= */
-const etapas = document.querySelectorAll('.etapa');
-const fluxoLinha = document.getElementById('fluxoLinha');
-if (etapas.length && TEM_IO) {
-  const obsEtapas = new IntersectionObserver(
-    (entradas) => {
-      entradas.forEach((e) => e.target.setAttribute('aria-current', String(e.isIntersecting)));
-    },
-    { threshold: 0.6 }
-  );
-  etapas.forEach((e) => obsEtapas.observe(e));
-
-  if (fluxoLinha && !REDUCIDO) {
-    const obsLinha = new IntersectionObserver(
-      (entradas) => {
-        entradas.forEach((e) => {
-          if (!e.isIntersecting) return;
-          const pai = e.target.parentElement;
-  const altura = pai.offsetHeight;
-  const topo = e.target.offsetTop;
-          const p = Math.min(1, Math.max(0, topo / altura));
-          fluxoLinha.style.height = `${p * 100}%`;
-        });
-      },
-      { threshold: [0, 0.5, 1] }
-    );
-    etapas.forEach((e) => obsLinha.observe(e));
-  }
-}
-
-/* =========================================================
    HERO — voo da carga (Maputo -> Pemba -> Maputo, em loop) e
    revelacao do titulo
    ========================================================= */
@@ -200,462 +135,51 @@ function iniciarHero() {
 }
 
 /* =========================================================
-   MAPA DE MOÇAMBIQUE — provinces reais
-   ------------------------------------------------------------
-   O desenho vem de js/mapa-dados.js, gerado a partir do
-   geoBoundaries ADM1. Aqui so se faz a projecao, o brilho
-   quando a rota passa e as etiquetas.
+   DIÁLOGOS: scroll do fundo e teclado do menu
    ========================================================= */
-import { BBOX, PAIS, PROVINCIAS, CAPITAIS, ROTA, agencyPoint } from './mapa-dados.js';
-
-function iniciarMapa() {
-  const canvas = document.getElementById('canvasMapa');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const LARG = BBOX[2] - BBOX[0];
-  const ALT = BBOX[3] - BBOX[1];
-
-  let w = 0, h = 0, esc = 1, ox = 0, oy = 0;
-  let visivel = false;
-  let t0 = performance.now();
-  const hub = agencyPoint('Maputo');
-  const brilho = {};
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = canvas.clientWidth;
-    h = canvas.clientHeight;
-    if (!w || !h) return;
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const pad = w < 700 ? 14 : 40;
-    const padB = w < 700 ? 26 : 40;
-    esc = Math.min((w - pad * 2) / LARG, (h - pad - padB) / ALT);
-    ox = (w - LARG * esc) / 2;
-    oy = pad + (h - pad - padB - ALT * esc) / 2;
-  }
-
-  /* As coordenadas vêm projectadas (lon·cos, −lat): subtrair a origem é
-     obrigatório, senão o mapa é desenhado fora do canvas. */
-  const X = (lx) => ox + (lx - BBOX[0]) * esc;
-  const Y = (ly) => oy + (ly - BBOX[1]) * esc;
-
-  function caminho(anel, fechar) {
-    ctx.beginPath();
-    for (let i = 0; i < anel.length; i += 1) {
-      if (i === 0) ctx.moveTo(X(anel[i][0]), Y(anel[i][1]));
-      else ctx.lineTo(X(anel[i][0]), Y(anel[i][1]));
-    }
-    if (fechar) ctx.closePath();
-  }
-
-  /* A etiqueta mede-se antes de se escrever. Num canvas de telemóvel
-     (310px) um nome à direita de Pemba saía pela borda: quando não cabe
-     do lado pedido, vira para o outro lado do ponto (os 22px são os 11 de
-     afastamento, de um lado e do outro). */
-  function etiqueta(x, y, t, cor, align) {
-    ctx.save();
-    ctx.font = `700 ${w < 430 ? 10 : 11}px "Plus Jakarta Sans", sans-serif`;
-    const largura = ctx.measureText(t).width;
-    if (align === 'left' && x + largura > w - 4) { align = 'right'; x -= 22; }
-    else if (align === 'right' && x - largura < 4) { align = 'left'; x += 22; }
-    ctx.textAlign = align;
-    ctx.textBaseline = 'middle';
-    ctx.lineWidth = 3.5;
-    ctx.strokeStyle = '#0B0B0C';
-    ctx.lineJoin = 'round';
-    ctx.strokeText(t, x, y);
-    ctx.fillStyle = cor;
-    ctx.fillText(t, x, y);
-    ctx.restore();
-  }
-
-  /* ------------------------------------------------------------
-     Fase 8A (A1) — o contorno do país.
-
-     `iniciarMapa` nunca desenhou o `PAIS`. Só o hero o fazia, e o hero é
-     o ecrã que ninguém olha depois dos primeiros três segundos. Na
-     secção de Cobertura — que é onde o cliente foi ver o mapa — as dez
-     províncias apareciam a flutuar sem fronteira nenhuma, e era
-     impossível ler onde terminava Moçambique.
-
-     Pinta-se com a MESMA cor de fundo das províncias, por baixo de
-     todas. Isso também absorve o desvio entre fronteiras partilhadas: as
-     províncias são simplificadas uma a uma, e uma fronteira comum pode
-     divergir ~1 km. Com o país pintado por baixo, dos dois lados da
-     linha a cor é a mesma e a linha desaparece.
-     ------------------------------------------------------------ */
-  function desenharPais(t) {
-    const cx = X((BBOX[0] + BBOX[2]) / 2);
-    const cy = Y((BBOX[1] + BBOX[3]) / 2);
-    const raio = LARG * esc * 0.8;
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, raio);
-    g.addColorStop(0, 'rgba(169,207,68,0.13)');
-    g.addColorStop(1, 'rgba(169,207,68,0.03)');
-    for (const anel of PAIS) {
-      if (anel.length < 3) continue;
-      caminho(anel, true);
-      ctx.fillStyle = g;
-      ctx.fill();
-    }
-  }
-
-  function desenharFronteira() {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(169,207,68,0.75)';
-    ctx.lineWidth = 1.4;
-    for (const anel of PAIS) {
-      if (anel.length < 3) continue;
-      caminho(anel, true);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function desenhar(t) {
-    ctx.clearRect(0, 0, w, h);
-
-    desenharPais(t);
-
-    // provincia a provincia: TODOS os anéis são preenchidos. O
-    // `if (anel === PROVINCIAS[nome][0])` que estava aqui preenchia só o
-    // primeiro — e em quatro províncias (Cabo Delgado, Sofala, Inhambane e
-    // Maputo) o primeiro era um resto degenerado de três pontos, pelo que
-    // o continente ficava sem cor nenhuma por baixo do contorno.
-    for (const nome in PROVINCIAS) {
-      const b = brilho[nome] || 0;
-      for (const anel of PROVINCIAS[nome]) {
-        caminho(anel, true);
-        ctx.fillStyle = b > 0
-          ? `rgba(169,207,68,${(0.05 + 0.26 * b).toFixed(3)})`
-          : 'rgba(169,207,68,0.035)';
-        ctx.fill();
-        ctx.strokeStyle = b > 0
-          ? `rgba(169,207,68,${(0.4 + 0.5 * b).toFixed(3)})`
-          : 'rgba(169,207,68,0.5)';
-        ctx.lineWidth = 1 + b * 1.1;
-        ctx.stroke();
-      }
-    }
-
-    /* Fase 8C/C4: cada rota SAI da sede (Maputo) para a capital, e acaba
-       numa seta. Até à 8B as linhas iam das províncias para Maputo, e o
-       ponto que corria nelas chegava à sede — o contrário do que a JVI é. */
-    for (const nome in CAPITAIS) {
-      if (nome === 'Maputo') continue;
-      const c = CAPITAIS[nome];
-      const p = Math.max(0, Math.min(1, (t - (distancia(c, hub) / 9)) * 1.2));
-      if (p <= 0) continue;
-      const x = X(c.x);
-      const y = Y(c.y);
-      const hx = X(hub.x);
-      const hy = Y(hub.y);
-      const ccx = (x + hx) / 2 + (hy - y) * 0.18;
-      const ccy = (y + hy) / 2 - (hx - x) * 0.18;
-
-      ctx.save();
-      ctx.setLineDash([4, 5]);
-      ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = 'rgba(169,207,68,0.75)';
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.moveTo(hx, hy);
-      ctx.quadraticCurveTo(ccx, ccy, x, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      const e = p * p * (3 - 2 * p);
-      const m = 1 - e;
-      const tx = m * m * hx + 2 * m * e * ccx + e * e * x;
-      const ty = m * m * hy + 2 * m * e * ccy + e * e * y;
-      const rg = ctx.createRadialGradient(tx, ty, 0, tx, ty, 9);
-      rg.addColorStop(0, '#A9CF44');
-      rg.addColorStop(1, 'transparent');
-      ctx.globalAlpha = 0.9;
-      ctx.fillStyle = rg;
-      ctx.beginPath();
-      ctx.arc(tx, ty, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      setaDestino(hx, hy, ccx, ccy, x, y, p);
-
-      ctx.fillStyle = '#A9CF44';
-      ctx.beginPath();
-      ctx.arc(x, y, 3.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    /* ------------------------------------------------------------
-       A3 — a agência da JVI, em todas as províncias da rota.
-
-       Aqui já havia um ponto verde em cada capital, mas era o GANCHO
-       da rota para o hub, não a agência: nascia só quando a sua linha
-       começava a desenhar-se e no fim ficava reduzido a 3,4 px, sem
-       legenda nenhuma. Agora é um anel com a cidade escrita por baixo,
-       sempre visível, que acende com a passagem da rota.
-
-       A lista é a mesma do voo — `ROTA`, em `mapa-dados.js`. Uma agência
-       numa província por onde o avião não passa seria um ponto de
-       papel; o que a rota mostra é onde a JVI opera.
-       ------------------------------------------------------------ */
-    for (const nome of ROTA) {
-      const a = agencyPoint(nome);
-      if (!a) continue;
-      const x = X(a.x);
-      const y = Y(a.y);
-      const luz = Math.min(1, (brilho[nome] || 0) + 0.3);
-      const r = 2.8 + 1.8 * luz;
-      ctx.save();
-      ctx.globalAlpha = 0.35 + 0.55 * luz;
-      ctx.fillStyle = nome === 'Maputo' ? '#F4F4F5' : '#A9CF44';
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 0.3 + 0.5 * luz;
-      ctx.strokeStyle = nome === 'Maputo' ? '#F4F4F5' : '#A9CF44';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(x, y, r + 3, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // hub
-    const hx = X(hub.x);
-    const hy = Y(hub.y);
-    const pulso = 13 + Math.sin(t * 2.2) * 4;
-    ctx.save();
-    const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 28);
-    hg.addColorStop(0, 'rgba(244,244,245,0.55)');
-    hg.addColorStop(1, 'transparent');
-    ctx.fillStyle = hg;
-    ctx.beginPath();
-    ctx.arc(hx, hy, 28, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = '#F4F4F5';
-    ctx.lineWidth = 1.3;
-    ctx.beginPath();
-    ctx.arc(hx, hy, pulso, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = '#F4F4F5';
-    ctx.beginPath();
-    ctx.arc(hx, hy, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    desenharFronteira();
-
-    /* Os nomes, por último para ficarem por cima. Em TODOS os ecrãs: até à
-       Fase 9 só eram escritos acima de 430px, e num telemóvel o mapa de
-       cobertura eram dez pontos sem nome. */
-    for (const nome of ROTA) {
-      const a = agencyPoint(nome);
-      if (!a) continue;
-      etiqueta(X(a.x) + (a.x < 34 ? -11 : 11), Y(a.y) + 14, rotuloDe(nome),
-        nome === 'Maputo' ? '#F4F4F5' : '#A9CF44', a.x < 34 ? 'right' : 'left');
-    }
-  }
-
-  /* O rótulo de cada ponto é a PROVÍNCIA de destino da seta, que é o que
-     o cliente pediu ("as setas com o nome da província"). Maputo não é
-     destino: é a sede, e é isso que diz. */
-  function rotuloDe(nome) {
-    return nome === 'Maputo' ? 'Maputo · Sede' : nome;
-  }
-
-  /* A ponta de seta de uma rota, a 90% da curva hub -> capital e na
-     tangente desse ponto — encostada ao destino, lê-se "vai para aqui".
-     Acende à medida que a rota se desenha (`p`). */
-  function setaDestino(hx, hy, ccx, ccy, x, y, p) {
-    const em = (u) => {
-      const m = 1 - u;
-      return [m * m * hx + 2 * m * u * ccx + u * u * x, m * m * hy + 2 * m * u * ccy + u * u * y];
-    };
-    const [px, py] = em(0.9);
-    const [ax, ay] = em(0.86);
-    const r = 5.5;
-    ctx.save();
-    ctx.translate(px, py);
-    ctx.rotate(Math.atan2(py - ay, px - ax));
-    ctx.globalAlpha = 0.35 + 0.6 * p;
-    ctx.fillStyle = '#A9CF44';
-    ctx.beginPath();
-    ctx.moveTo(r, 0);
-    ctx.lineTo(-r * 0.8, r * 0.75);
-    ctx.lineTo(-r * 0.35, 0);
-    ctx.lineTo(-r * 0.8, -r * 0.75);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function distancia(a, b) {
-    return Math.hypot(a.x - b.x, a.y - b.y);
-  }
-
-  /* Quando é que o desenho acaba. Em `desenhar`, a rota de cada capital
-     tem `p = clamp((t - distancia/9) * 1.2)`, ou seja cada rota acaba de
-     desenhar em `t = distancia/9 + 0.833`. A última é a mais distante.
-     Passado isso o mapa já está no estado final.
-
-     O loop não tinha fim. `passo` só parava quando o utilizador saía da
-     secção, e o mapa redesenhava a 60 Hz durante todo o tempo que lá
-     estivesse — mesmo com as rotas Terminadas há segundos. Por frame:
-     ~1 100 `lineTo` das 10 províncias, 10 `fill()`, 34 `stroke()`, 18
-     `createRadialGradient` (9 capitais + o hub) e 10 novas passagens de
-     `ctx.font` nas etiquetas.
-
-     A única coisa que ainda mexia depois de o desenho acabar é o pulso do
-     hub, `13 + Math.sin(t * 2.2) * 4` — um ponto que respira. Não
-     justifica um repaint completo do mapa 60 vezes por segundo, e é
-     exactamente o que empurra o INP para fora da faixa "Good" numa gama
-     média. A secção fica a ser lida, com o rato em cima.
-
-     O `hero-voo.js` já faz isto: `parar = true` quando `t >= 1`. Os dois
-     canvases do site passam a ter a mesma regra. */
-  const T_FIM = Math.max(
-    ...Object.keys(CAPITAIS)
-      .filter((n) => n !== 'Maputo')
-      .map((n) => distancia(CAPITAIS[n], hub)),
-  ) / 9 + 1.2;
-
-  resize();
-  window.addEventListener('resize', () => { if (visivel) desenhar((performance.now() - t0) / 1000); }, { passive: true });
-
-  if (TEM_IO) {
-    new IntersectionObserver((e) => {
-      visivel = e[0].isIntersecting;
-      if (!visivel) return;
-      resize();
-      t0 = performance.now();
-      if (reduzir) { desenhar(3); return; }
-      const passo = (agora) => {
-        if (!visivel) return;
-        const t = (agora - t0) / 1000;
-        desenhar(t);
-        /* Só continua enquanto o desenho estiver a fazer alguma coisa. */
-        if (t < T_FIM) requestAnimationFrame(passo);
-      };
-      requestAnimationFrame(passo);
-    }, { threshold: 0.15 }).observe(canvas);
-  } else {
-    visivel = true;
-    desenhar(3);
-  }
-  void brilho;
-}
-
-/* =========================================================
-   MODAL
-   ========================================================= */
-const modal = document.getElementById('modal');
-let focoAnterior = null;
+const legal = document.getElementById('legalPrivacidade');
+const confirm = document.getElementById('confirm');
 
 const FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /* `modal-aberto` trava o scroll do fundo (`overflow: hidden` em
-   styles.css). Quem decidia se a classe estava ou não era cada
-   abrir/fechar, a fazer `add` e `remove` por sua conta — e o diálogo
-   legal é aberto DE CIMA do modal, a partir da caixa de consentimento
-   que está lá dentro.
-
-   O `fecharLegal` tirava a classe sem reparar que o modal continuava
-   aberto: fechar a Política de Privacidade destravava o scroll com o
-   pop-up do orçamento ainda no ecrã, e a página passava a rolar por trás
-   da máscara. Com os dois abertos há ainda dois `aria-modal="true"`
-   empilhados sem `inert`, e o leitor de ecrã tem de adivinhar qual é o
-   diálogo activo.
-
-   Em vez de alternar, deriva-se do estado: qualquer sobreposição aberta
-   mantém a classe, e só quando nenhuma está é que ela sai. */
+   styles.css). Em vez de cada abrir/fechar fazer `add` e `remove` por sua
+   conta, deriva-se do estado: qualquer sobreposição aberta mantém a
+   classe, e só quando nenhuma está é que ela sai. */
 function sincronizarBody() {
-  const algumAberto = [modal, legal, confirm].some((el) => el?.dataset.aberto === 'true');
+  const algumAberto = [legal, confirm].some((el) => el?.dataset.aberto === 'true');
   document.body.classList.toggle('modal-aberto', algumAberto);
 }
 
-function abrirModal() {
-  focoAnterior = document.activeElement;
-  modal.dataset.aberto = 'true';
-  sincronizarBody();
-  const primeiro = modal.querySelector('.modal__fechar');
-  setTimeout(() => primeiro?.focus(), 60);
-}
-function fecharModal() {
-  modal.dataset.aberto = 'false';
-  sincronizarBody();
-  focoAnterior?.focus();
-}
-modal.querySelectorAll('[data-fechar]').forEach((el) => el.addEventListener('click', fecharModal));
 document.addEventListener('keydown', (e) => {
   /* O menu móvel também fecha com Escape e prende o foco: é um
      painel sobre o conteúdo, mesmo sem aria-modal. */
-  if (menu.dataset.aberto === 'true') {
-    if (e.key === 'Escape') { alternarMenu(false); return; }
-    if (e.key === 'Tab') {
-      const itens = [...menu.querySelectorAll(FOCAVEIS)].filter((el) => el.offsetParent !== null);
-      if (itens.length) {
-        const primeiro = itens[0];
-        const ultimo = itens[itens.length - 1];
-        if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
-        else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
-      }
+  if (menu.dataset.aberto !== 'true') return;
+  if (e.key === 'Escape') { alternarMenu(false); return; }
+  if (e.key === 'Tab') {
+    const itens = [...menu.querySelectorAll(FOCAVEIS)].filter((el) => el.offsetParent !== null);
+    if (itens.length) {
+      const primeiro = itens[0];
+      const ultimo = itens[itens.length - 1];
+      if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
     }
   }
-  if (modal.dataset.aberto !== 'true') return;
-  /* Com a confirmação aberta por cima, o Escape é dela. Sem esta guarda,
-     o handler do modal corria primeiro e fechava os dois: a pessoa
-     perdia o resumo por confirmar sem aviso. */
-  if (confirm?.dataset.aberto === 'true') return;
-  /* A mesma precedência para a Política de Privacidade, que também
-     abre por cima do modal. Sem esta guarda, um Escape fechava os dois:
-     a pessoa lia os termos, carregava Escape para os fechar, e perdia
-     o formulário do orçamento que tinha-filled por baixo. */
-  if (legal?.dataset.aberto === 'true') return;
-  if (e.key === 'Escape') { fecharModal(); return; }
-  /* Focus trap: o Tab nao pode sair do dialogo enquanto estiver aberto */
-  if (e.key !== 'Tab') return;
-  const itens = [...modal.querySelectorAll(FOCAVEIS)].filter((el) => el.offsetParent !== null);
-  if (!itens.length) return;
-  const primeiro = itens[0];
-  const ultimo = itens[itens.length - 1];
-  if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
-  else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
 });
 
 /* =========================================================
    DIÁLOGO LEGAL (política de privacidade)
    ========================================================= */
-const legal = document.getElementById('legalPrivacidade');
 let focoLegal = null;
 
 function abrirLegal() {
   focoLegal = document.activeElement;
-  /* A Política de Privacidade abre-se de dentro do modal do orçamento
-     (é a caixa de consentimento que a chama). Com os dois abertos, o
-     modal de baixo tem de ficar `inert`: senão o teclado e o leitor de
-     ecrã continuam a passear pelo formulário que está por baixo do
-     diálogo que se está a ler, e há dois `aria-modal="true"` sem forma
-     de saber qual manda. É o mesmo cuidado que `abrirConfirmacao` já
-     toma, com o mesmo comentário de porquê. */
-  const sobreModal = modal.dataset.aberto === 'true';
-  if (sobreModal) modal.inert = true;
-  legal.dataset.sobreModal = sobreModal ? 'true' : 'false';
   legal.dataset.aberto = 'true';
   sincronizarBody();
   setTimeout(() => legal.querySelector('.legal__fechar')?.focus(), 60);
 }
 function fecharLegal() {
   legal.dataset.aberto = 'false';
-  /* Só se desarma o `inert` se foi este diálogo que o pôs. E a classe do
-     body sai por `sincronizarBody`, que sabe que o modal continua
-     aberto — antes era um `remove` incondicional que destravava o
-     scroll com o orçamento ainda no ecrã. */
-  if (legal.dataset.sobreModal === 'true') modal.inert = false;
   sincronizarBody();
   focoLegal?.focus();
 }
@@ -690,26 +214,19 @@ import {
   iniciarOrcamento, linhasResumo, planoEnvio,
 } from './orcamento.js';
 
-/* O formulário vive só no modal — o briefing pede pop-up, e uma
-   segunda instância na secção obligaria a prefixar todos os IDs.
-   A secção fica com o CTA e a tabela de preços em texto. */
-document.getElementById('orcRaiz').append(
+/* Fase 10: o formulário vive na página `orcamento.html`, dentro de
+   `#orcRaiz`. Nas outras páginas não há `#orcRaiz` e nada disto arranca:
+   `iniciarOrcamento(null)` devolve logo. */
+document.getElementById('orcRaiz')?.append(
   document.getElementById('tplOrc').content.cloneNode(true)
 );
 iniciarOrcamento(document.querySelector('#orcRaiz [data-orc]'));
 
-/* Todos os "Pedir orçamento" abrem o pop-up, sem excepções por
-   largura de ecrã. */
+/* A função serverless descarta pedidos com menos de 3 s de preenchimento
+   como bots. A contagem começa quando o formulário aparece, não quando se
+   carrega em enviar. */
 const formOrc = document.querySelector('#orcRaiz [data-orc]');
-document.querySelectorAll('[data-abrir-orc]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    /* A função serverless descarta pedidos com menos de 3 s de
-       preenchimento como bots. A contagem tem de começar quando o
-       formulário é aberto, não quando se carrega em enviar. */
-    if (!formOrc.dataset.abertoEm) formOrc.dataset.abertoEm = String(Date.now());
-    abrirModal();
-  });
-});
+if (formOrc) formOrc.dataset.abertoEm = String(Date.now());
 
 /* =========================================================
    ENVIO: REGISTO (PLANO B) + DUAS MENSAGENS DE WHATSAPP
@@ -743,7 +260,7 @@ const raizOrc = document.getElementById('orcRaiz');
    HTML; isto apanha a proxima, e so avisa em vez de rebentar. */
 const noRaiz = (sel) => {
   const el = raizOrc?.querySelector(sel) ?? null;
-  if (!el) console.warn(`JVI: ${sel} nao existe dentro de #orcRaiz.`);
+  if (raizOrc && !el) console.warn(`JVI: ${sel} nao existe dentro de #orcRaiz.`);
   return el;
 };
 
@@ -844,7 +361,7 @@ async function enviarPedido(d) {
    tentativa anterior ficavam acesos, e quem mandasse dois pedidos na
    mesma sessão abria o segundo formulário já vermelho e com um banner a
    dizer "precisa de aceitar a Política de Privacidade". */
-raizOrc.querySelector('[data-ok-fechar]')?.addEventListener('click', () => {
+raizOrc?.querySelector('[data-ok-fechar]')?.addEventListener('click', () => {
   okCaixa.hidden = true;
   okNota.textContent = '';
   okEmpresa.hidden = true;
@@ -853,7 +370,7 @@ raizOrc.querySelector('[data-ok-fechar]')?.addEventListener('click', () => {
   formOrc.hidden = false;
   formOrc.dispatchEvent(new Event('rearmar'));
   formOrc.dataset.abertoEm = String(Date.now());
-  fecharModal();
+  formOrc.querySelector('input, select, textarea')?.focus();
 });
 
 /* =========================================================
@@ -862,7 +379,6 @@ raizOrc.querySelector('[data-ok-fechar]')?.addEventListener('click', () => {
    O formulário, já validado, emite `orc:pronto` com os dados.
    Aqui desenham-se e espera-se por "Confirmar e enviar".
    ========================================================= */
-const confirm = document.getElementById('confirm');
 let dadosPedido = null;
 let focoConfirm = null;
 let confirmarHandler = null;
@@ -881,28 +397,19 @@ function abrirConfirmacao(d, aoConfirmar) {
     return [dt, dd];
   }));
   confirm.dataset.aberto = 'true';
-  /* Dois aria-modal="true" empilhados confundem o leitor de ecrã: o
-     #modal continua na árvore de acessibilidade por baixo de #confirm.
-     `inert` tira-o de lá e impede a'interacção por trás. */
-  modal.inert = true;
   sincronizarBody();
   confirm.querySelector('[data-confirmar]').focus();
 }
 
 function fecharConfirmacao() {
   confirm.dataset.aberto = 'false';
-  modal.inert = false;
-  /* O #modal continua aberto, por isso `sincronizarBody` mantém a classe
-     — que é o que se quer. Chamá-lo na mesma é que torna o código
-     independente da ordem: se um dia o modal não estiver aberto, a
-     classe sai em vez de ficar presa. */
   sincronizarBody();
   focoConfirm?.focus();
 }
 
-confirm.querySelectorAll('[data-fechar-confirm]')
+confirm?.querySelectorAll('[data-fechar-confirm]')
   .forEach((el) => el.addEventListener('click', fecharConfirmacao));
-confirm.querySelector('[data-confirmar]').addEventListener('click', () => {
+confirm?.querySelector('[data-confirmar]').addEventListener('click', () => {
   fecharConfirmacao();
   confirmarHandler?.(dadosPedido);
 });
@@ -910,7 +417,7 @@ confirm.querySelector('[data-confirmar]').addEventListener('click', () => {
 /* O resumo só mostra um valor por campo: nunca HTML vindo do
    utilizador, o que fecharia a porta a injecção de marcação. */
 document.addEventListener('keydown', (e) => {
-  if (confirm.dataset.aberto !== 'true') return;
+  if (confirm?.dataset.aberto !== 'true') return;
   if (e.key === 'Escape') { fecharConfirmacao(); return; }
   if (e.key !== 'Tab') return;
   const itens = [...confirm.querySelectorAll(FOCAVEIS)].filter((el) => el.offsetParent !== null);
@@ -928,8 +435,8 @@ document.addEventListener('orc:pronto', (e) => {
 /* =========================================================
    ARRANQUE
    ========================================================= */
-document.getElementById('ano').textContent = new Date().getFullYear();
+const anoEl = document.getElementById('ano');
+if (anoEl) anoEl.textContent = new Date().getFullYear();
 iniciarHero();
-iniciarMapa();
 iniciarGaleria(document.querySelector('[data-gal]'), document.getElementById('luz'));
 iniciarCarrossel(document.querySelector('[data-gal]'));

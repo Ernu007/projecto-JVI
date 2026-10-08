@@ -14,14 +14,15 @@ import { MORADA_JVI, PLUS_CODE_JVI, COORDENADAS_JVI, linkDirecoes } from '../js/
    Duas coisas são testadas:
 
    1. O link em si — formato, codificação e a ausência de `origin`.
-   2. O `href` que está LITERALMENTE no `index.html`. O link é HTML
+   2. O `href` que está LITERALMENTE no HTML do site. O link é HTML
       estático de propósito (funciona sem JS e não pede consentimento
       nenhum), portanto o HTML é a segunda cópia da verdade. Estes testes
       são o que impede as duas de divergirem.
    --------------------------------------------------------------------------- */
 
 /** O atributo tal e qual no ficheiro, com as entidades HTML resolvidas. */
-const HTML = fs.readFileSync('index.html', 'utf8');
+import { SITE } from './paginas.js';
+const HTML = SITE;
 
 const entidades = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };
 const desescapar = (s) => s.replace(/&(amp|lt|gt|quot|#39);/g, (_, k) => entidades[k]);
@@ -99,7 +100,7 @@ test('o "+" do Plus Code vai como %2B, nunca cru', () => {
 
   /* E no HTML, que é escrito à mão: os DOIS botões. */
   const hrefs = [...HTML.matchAll(/href="(https:\/\/www\.google\.com\/maps\/dir\/[^"]*)"/g)].map((m) => desescapar(m[1]));
-  assert.equal(hrefs.length, 2, 'esperava dois botões de direcções: o do hero e o do rodapé');
+  assert.equal(hrefs.length, 1, 'esperava um só botão de direcções: o dos Contactos');
   for (const h of hrefs) {
     assert.equal(paramCru(h, 'destination'), '3H9C%2BVJ8%2C%20Maputo');
     assert.equal(h, linkDirecoes());
@@ -143,21 +144,11 @@ test('o botao do hero diz "Como chegar a JVI" e abre noutro separador', () => {
    Isto está no HTML, não numa classe: promoting o link a `btn--primario`
    punha o igual peso visual ao orçamento, e era a Fase 6 a dizer que
    duas primárias não funcionam. */
-test('as direccoes sao secundarias: o hero continua com UMA accao primaria', () => {
-  const accoes = /<div class="hero__acoes">([\s\S]*?)<\/div>/.exec(HTML);
-  assert.ok(accoes, 'não encontrei .hero__acoes no index.html');
-  const bloco = accoes[1];
-
-  const primarias = bloco.match(/btn--primario/g) ?? [];
-  assert.equal(primarias.length, 1,
-    `o hero tem ${primarias.length} acções primárias — a Fase 6 quer exactamente uma`);
-
-  const link = /<a\b[^>]*google\.com\/maps\/dir\/[^>]*>/.exec(bloco);
-  assert.ok(link, 'o link das direcções não está em .hero__acoes');
-  assert.doesNotMatch(link[0], /btn--primario/,
-    'o link das direcções foi promovido a acção primária');
-  assert.match(link[0], /btn--vidro/,
-    'o link das direcções devia herdar o estilo secundário do hero');
+test('as direccoes sao secundarias: nao competem com o WhatsApp', () => {
+  const link = /<a\b[^>]*google\.com\/maps\/dir\/[^>]*>/.exec(HTML);
+  assert.ok(link, 'não encontrei o link das direcções');
+  assert.doesNotMatch(link[0], /btn--primario|btn--wa/, 'o link das direcções foi promovido a acção principal');
+  assert.match(link[0], /btn--vidro/, 'o link das direcções devia ser secundário');
 });
 
 test('a morada que o cliente le e a mesma no JSON-LD, nos contactos e na politica', () => {
@@ -170,7 +161,7 @@ test('a morada que o cliente le e a mesma no JSON-LD, nos contactos e na politic
   assert.ok(streetAddress, 'não encontrei streetAddress no JSON-LD');
   assert.equal(streetAddress, MORADA_JVI);
   assert.ok(
-    new RegExp(`<b>Sede operacional</b>\\s*${MORADA_JVI.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(HTML),
+    new RegExp(`<b>Morada</b>\\s*${MORADA_JVI.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(HTML),
     'a morada da secção Contactos já não é a mesma',
   );
   assert.ok(HTML.includes(`<p class="pp__meta">JVI Carga &amp; Serviços, Lda · ${MORADA_JVI}, Moçambique`),

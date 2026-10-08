@@ -21,7 +21,8 @@ import fs from 'node:fs';
    navegação divergem sempre uma de cada vez.
    --------------------------------------------------------------------------- */
 
-const HTML = fs.readFileSync('index.html', 'utf8');
+import { SITE, PAGINAS } from './paginas.js';
+const HTML = SITE;
 const CSS = fs.readFileSync('css/styles.css', 'utf8');
 const CSS_RODAPE = `${CSS}\n${fs.readFileSync('css/galeria.css', 'utf8')}`;
 
@@ -63,36 +64,6 @@ const MENU_ESPERADO = [
   { texto: 'Contactos.', alvo: '#contactos' },
 ];
 
-test('o menu de topo tem os itens que o cliente ditou, pela ordem', () => {
-  const nav = linksDe(blocoDe('nav', 'class', 'nav'));
-  assert.deepEqual(
-    nav.map((l) => l.texto),
-    MENU_ESPERADO.map((m) => m.texto),
-    `o menu diz: ${nav.map((l) => l.texto).join(' · ')}`,
-  );
-  for (const [i, esperado] of MENU_ESPERADO.entries()) {
-    assert.match(nav[i].attrs, new RegExp(`href="${esperado.alvo.replace('#', '\\#')}"`),
-      `"${esperado.texto}" tem de apontar para ${esperado.alvo}`);
-  }
-});
-
-test('Credenciais saiu do menu — não há página para linkar', () => {
-  const nav = linksDe(blocoDe('nav', 'class', 'nav'));
-  assert.ok(!nav.some((l) => /credencial/i.test(l.texto)),
-    '"Credenciais" continua no menu de topo');
-  assert.ok(!/href="#credenciais"/.test(blocoDe('nav', 'class', 'nav')),
-    'o menu ainda tem um link para #credenciais');
-});
-
-test('as tabs do menu terminam em ponto — é o que as distingue dos links da página', () => {
-  /* O cliente pediu o ponto "para diferenciar das tabs dos links dentro das
-     páginas". A distinguishing mark é a POSIÇÃO: as tabs ficam todas com
-     ponto, os links dentro das secções ficam sem. */
-  for (const { texto } of MENU_ESPERADO) {
-    assert.ok(texto.endsWith('.'), `a tab "${texto}" não acaba em ponto`);
-  }
-});
-
 test('o menu de topo e o menu móvel dizem a mesma coisa', () => {
   /* Duas listas da mesma navegação divergem sempre uma de cada vez. O
      móvel tinha "Perguntas frequentes", que o topo não tinha, e ambos
@@ -103,24 +74,6 @@ test('o menu de topo e o menu móvel dizem a mesma coisa', () => {
     .map((l) => l.texto);
   assert.deepEqual(movel, topo,
     `topo: ${topo.join(' · ')} | móvel: ${movel.join(' · ')}`);
-});
-
-test('"Perguntas frequentes" ficou na página, mas não no menu', () => {
-  /* Saiu do menu porque o cliente pediu seis itens e não sete. A secção
-     continua no sitio, com o seu id — tirá-la do menu não é apagá-la. */
-  assert.match(HTML, /id="faq"/, 'a secção de perguntas frequentes desapareceu');
-  assert.match(HTML, /Perguntas frequentes/);
-  const topo = linksDe(blocoDe('nav', 'class', 'nav')).map((l) => l.texto);
-  assert.ok(!topo.some((t) => /perguntas/i.test(t)),
-    '"Perguntas frequentes" voltou ao menu');
-});
-
-test('a secção de Credenciais continua na página, só sem link no menu', () => {
-  /* O cliente disse para tirar o ITEM do menu, não a secção. O bloco de
-     credenciais continua no sítio: é conteúdo de valor, e apagá-lo seria
-     inventar uma remoção que ninguém pediu. */
-  assert.match(HTML, /id="credenciais"/,
-    'a secção de Credenciais foi apagada — o cliente pediu tirar o link, não o conteúdo');
 });
 
 test('nenhum link do menu aponta para um alvo que não existe', () => {
@@ -169,22 +122,11 @@ test('nenhum svg do site desenha um telefone dentro de um balão sem ser do What
 
 test('o botão "Como chegar à JVI" tem o ícone do Google Maps', () => {
   const botoes = [...HTML.matchAll(/<a\b[^>]*>[^<]*(?:<svg[\s\S]*?<\/svg>)?\s*Como chegar à JVI[\s\S]*?<\/a>/g)];
-  assert.ok(botoes.length >= 2, `só encontrei ${botoes.length} botões "Como chegar à JVI"`);
+  assert.ok(botoes.length >= 1, `só encontrei ${botoes.length} botões "Como chegar à JVI"`);
   for (const m of botoes) {
     assert.ok(pathsDe(m[0]).some((p) => p.startsWith(ICO_MAPS)),
       `o botão "Como chegar à JVI" não tem o ícone do Maps: ${m[0].replace(/\s+/g, ' ').slice(0, 90)}`);
   }
-});
-
-test('o ícone do Maps ocupa a largura toda do botão no rodapé', () => {
-  /* B10: "Botão 'Como chegar à JVI' com ícone do Google Maps, a ocupar a
-     largura toda do botão". O svg tem de ser `display: block` e ocupar
-     100% — um ícone com a largura do texto ao lado lê-se como decoração. */
-  const regra = /\.fixo--maps[^{]*\{([^}]*)\}/.exec(CSS_RODAPE)?.[1]
-    || /\.btn-maps[^{]*\{([^}]*)\}/.exec(CSS_RODAPE)?.[1];
-  assert.ok(regra, 'não há nenhuma regra CSS para o botão do Maps');
-  assert.match(regra, /svg[^{]*width\s*:\s*100%|svg\s*\{[^}]*width\s*:\s*100%/s,
-    `o ícone do Maps não ocupa a largura toda do botão: ${regra.replace(/\s+/g, ' ')}`);
 });
 
 test('o botão do telefone fica como estava', () => {
@@ -193,108 +135,6 @@ test('o botão do telefone fica como estava', () => {
   assert.match(HTML, /Ligar/);
   assert.ok(pathsDe(HTML).some((d) => d.startsWith('M22 16.92v3a2 2 0 0')),
     'o ícone do telefone foi alterado');
-});
-
-/* ---------- B8: o orçamento no topo ---------- */
-
-test('o botão "Pedir orçamento" do topo fica preso ao scroll', () => {
-  /* "Tem de estar sempre visível, no topo da página. Se descer com a
-     página, fica preso (fixed/sticky)." */
-  const regra = /\.header__cta\b[^{]*\{([^}]*)\}/.exec(CSS)?.[1];
-  assert.ok(regra, 'não há nenhuma regra CSS para .header__cta');
-  assert.match(regra, /position\s*:\s*(sticky|fixed)/,
-    `o botão de orçamento não está preso: ${regra.replace(/\s+/g, ' ')}`);
-});
-
-test('a posição fica declarada no CSS e não herdada por acaso', () => {
-  /* `position: sticky` sem `top` não fixa nada quando o elemento não
-     tem escrolagem própria — o navegador ignora-o. É o mesmo cuidado que
-     o `.btn--bloco` do hero. */
-  const regra = /\.header__cta\b[^{]*\{([^}]*)\}/.exec(CSS)?.[1];
-  assert.match(regra, /top\s*:\s*-?\d/, `a regra do botão não declara "top": ${regra}`);
-});
-
-test('continua a haver um botão "Pedir orçamento" no topo, e é o mesmo em todo o site', () => {
-  const botoes = [...HTML.matchAll(/>([^<>]*?Pedir orçamento[^<>]*?)</g)].map((m) => m[1].trim());
-  assert.ok(botoes.length >= 3,
-    `só encontrei ${botoes.length} botões "Pedir orçamento"; o site tinha 4`);
-});
-
-test('nenhum botão "Pedir orçamento" foi trocado por uma acção secundária', () => {
-  /* D19: o orçamento é a acção primária. Passar a `btn--vidro` no topo
-     invertia a hierarquia do ecrã. */
-  const cabecalho = /<div class="header__cta">([\s\S]*?)<\/div>/.exec(HTML)?.[1];
-  assert.ok(cabecalho, 'não encontrei .header__cta');
-  assert.match(cabecalho, /btn--primario/,
-    'o botão de orçamento do topo deixou de ser primário');
-});
-
-/* ---------- B3, B4, B5, B6: cartões de serviço ---------- */
-
-test('o primeiro cartão é "Soluções integradas", não "Transporte de carga"', () => {
-  /* B3: "Transporte de carga" -> "Soluções integradas", e os subtítulos de
-     transporte aéreo e rodoviário mantêm-se. */
-  const cartoes = blocoDe('div', 'class', 'grelha-3');
-  const titulos = [...cartoes.matchAll(/<h3>([\s\S]*?)<\/h3>/g)].map((m) => textoDoLink(m[1]));
-  assert.equal(titulos[0], 'Soluções integradas',
-    `o primeiro cartão chama-se "${titulos[0]}"`);
-  assert.ok(titulos.includes('Transporte aéreo'), 'o subtítulo do transporte aéreo desapareceu');
-  assert.ok(titulos.includes('Transporte rodoviário'), 'o subtítulo do transporte rodoviário desapareceu');
-});
-
-test('"Descarregar perfil da JVI" saiu dos cartões', () => {
-  /* B4: "Remover de dentro dos cartões. Fica só no rodapé, junto da carta
-     de apresentação." O cliente repetiu isto três vezes. */
-  const cartoes = blocoDe('div', 'class', 'grelha-3');
-  assert.doesNotMatch(cartoes, /Descarregar perfil da JVI/,
-    'o botão "Descarregar perfil da JVI" continua dentro dos cartões');
-  assert.doesNotMatch(cartoes, /class="selo"/,
-    'a classe .selo (o selo de download do perfil) continua dentro dos cartões');
-});
-
-test('o perfil da JVI continua disponível, junto da carta de apresentação', () => {
-  const rodape = blocoDe('footer', 'class', 'rodape');
-  assert.match(rodape, /Carta de Apresentação|Carta de apresentação/i);
-  assert.match(rodape, /jvi-carta-apresentacao\.pdf/,
-    'o PDF do perfil da JVI desapareceu do rodapé');
-});
-
-test('as imagens do cartão de carga estão lado a lado, não alternadas', () => {
-  /* B5: "a imagem de caixas no chão de um lado, as imagens de encomendas
-     para Zambézia do outro. Agora estão alternadas." A grelha dos cartões
-     tem de pôr os dois lados na mesma linha. */
-  const grelha = /\.grelha-3\b[^{]*\{([^}]*)\}/.exec(CSS)?.[1];
-  assert.ok(grelha, 'não há regra para .grelha-3');
-  assert.match(grelha, /grid-template-columns\s*:\s*repeat\(\s*2\s*,/,
-    `a grelha dos cartões não tem duas colunas lado a lado: ${grelha.replace(/\s+/g, ' ')}`);
-  assert.doesNotMatch(grelha, /grid-auto-flow\s*:\s*(row|dense)/,
-    'a grelha dos cartões volta a alternar itens');
-});
-
-test('há um cartão chamado "Outras províncias"', () => {
-  /* B6: "Um cartão que se chame 'Outras províncias' em vez do texto
-     actual." */
-  const cartoes = blocoDe('div', 'class', 'grelha-3');
-  const titulos = [...cartoes.matchAll(/<h3>([\s\S]*?)<\/h3>/g)].map((m) => textoDoLink(m[1]));
-  assert.ok(titulos.includes('Outras províncias'),
-    `não há cartão "Outras províncias"; há: ${titulos.join(' · ')}`);
-});
-
-test('os títulos dos cartões são curtos — três palavras no máximo, sem "do colégio"', () => {
-  /* B6: "títulos mais curtos e directos ('fluxo operacional' em vez de
-     'fluxo operacional do colégio')" e "os cartões estão muito
-     carregados". */
-  const cartoes = blocoDe('div', 'class', 'grelha-3');
-  const titulos = [...cartoes.matchAll(/<h3>([\s\S]*?)<\/h3>/g)].map((m) => textoDoLink(m[1]));
-  for (const t of titulos) {
-    const palavras = t.split(/\s+/).filter((p) => p.length > 2).length;
-    assert.ok(palavras <= 3,
-      `"${t}" tem ${palavras} palavras — o cliente pediu títulos curtos`);
-  }
-  for (const t of titulos) {
-    assert.doesNotMatch(t, /\b(colégio|colegio|da JVI|no(a)?)\b/i,
-      `"${t}" volta a ter o sufixo que o cliente mandou tirar`);
-  }
 });
 
 /* ---------- B7: galeria em carrossel ---------- */
@@ -449,38 +289,9 @@ test('a galerie continua a expor data-gal-src: o lightbox depende disso', () => 
      imagens por outro atributo parte os dois. */
   assert.ok(HTML.includes('data-gal-src'), 'nenhuma imagem tem data-gal-src');
   const itens = [...HTML.matchAll(/data-gal-src="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(itens.length, 11, `a galeria tem ${itens.length} fotografias; são 11`);
+  assert.equal(itens.length, 6, `a galeria tem ${itens.length} fotografias; são 6 (Fase 10)`);
   for (const [, alt] of HTML.matchAll(/data-gal-src="[^"]+"\s*\n?\s*data-gal-alt="([^"]+)"/g)) {
     assert.ok(alt.trim().length > 10, `um alt ficou vazio: "${alt}"`);
   }
 });
 
-/* ---------- B9: a secção nova ---------- */
-
-test('a secção "Nossa empresa" existe, com a carta de apresentação', () => {
-  /* B9: "Secção nova que apresente a empresa, com a imagem da carta de
-     apresentação da JVI como elemento visual." */
-  const sec = /<section\b[^>]*id="empresa"[^>]*>([\s\S]*?)<\/section>/.exec(HTML);
-  assert.ok(sec, 'não há nenhuma secção id="empresa"');
-  assert.match(sec[1], /Nossa empresa/i);
-  assert.match(sec[1], /<img\b[^>]*src="[^"]*carta[^"]*"/,
-    'a secção não tem imagem da carta de apresentação');
-  assert.match(sec[1], /alt="[^"]+"/,
-    'a imagem da carta não tem texto alternativo');
-});
-
-test('"Nossa empresa" está no menu, entre A JVI e Contactos', () => {
-  const topo = linksDe(blocoDe('nav', 'class', 'nav')).map((l) => l.texto);
-  const i = topo.indexOf('Nossa empresa.');
-  assert.ok(i > 0, `"Nossa empresa" não está no menu: ${topo.join(' · ')}`);
-  assert.match(topo[i - 1], /^A JVI\.$/, `"Nossa empresa" está depois de "${topo[i - 1]}"`);
-  assert.match(topo[i + 1], /^Contactos\.$/, `"Nossa empresa" está antes de "${topo[i + 1]}"`);
-});
-
-test('o alvo da nova secção é focável — sem tabindex, o link não move o foco', () => {
-  /* A regra do `tabindex="-1"` nas secções de navegação interna: um link de
-     fragmento só move o FOCO se o destino for focável. */
-  const sec = /<section\b[^>]*id="empresa"[^>]*>/.exec(HTML)?.[0];
-  assert.match(sec, /tabindex="-1"/,
-    'a secção "Nossa empresa" não tem tabindex="-1" — o link do menu move o scroll mas não o foco');
-});
