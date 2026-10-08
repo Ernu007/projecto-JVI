@@ -941,3 +941,19 @@ apagou nada; ficam fora das páginas). O carrossel, a luzbox e o contador
 (`1 / 6`) são os de sempre — `iniciarGaleria` e `iniciarCarrossel` não mudaram.
 A carta de apresentação passou a **botão-link para o PDF** (já não a capa em
 grande), como o brief permite.
+
+### D50 — botões fixos: WhatsApp e telefone, pequenos, sem tapar nada (10.5)
+
+| Decisão | Razão |
+|---|---|
+| Só dois botões: WhatsApp (`--wa`) e telefone (`--verde-marca`, ícone preto). O Gmail saiu | Pedido do Ernu. O e-mail está em Contactos. |
+| 48 × 48 px numa **fila**, canto inferior direito, em todos os tamanhos de ecrã; sem legendas | Em coluna tapavam 108 px de altura; a fila tapa 48. As legendas só apareciam com o rato (inúteis no telemóvel) e alargavam a caixa; o nome acessível vem do `aria-label`. |
+| `body { padding-bottom: calc(var(--faixa) + env(safe-area-inset-bottom)) }`, `--faixa: 72px` e `body` com o fundo do rodapé | A faixa reserva 48 px de botão + 12 px de margem + 12 px de folga: o fim de cada página fica **acima** dos botões. O fundo do `body` é o do rodapé para a reserva não parecer uma barra de outra cor. |
+
+**Verificado no Chrome (headless, via DevTools), fim do scroll de cada página,
+360 × 800 e 390 × 800:** os botões ocupam y 740–788, o rodapé acaba em y 728 e
+**nenhum elemento de conteúdo (`main`, `footer`) intersecta a faixa** (lista de
+elementos tapados vazia nas 5 páginas × 2 larguras); `scrollWidth` igual à
+largura do ecrã (sem scroll horizontal). A meio da página os botões são
+fixos e passam por cima do que estiver por baixo, como qualquer botão
+flutuante — o que não podem é tapar o fim da página, e não tapam.
