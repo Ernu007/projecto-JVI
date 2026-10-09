@@ -159,3 +159,9 @@ test('no aviso a JVI o numero de retorno e o do CLIENTE, nunca o da JVI', () => 
   assert.doesNotMatch(t, /258878066265/);
 });
 
+
+test('10B.5: o numerário aparece na mensagem da empresa e na do cliente', () => {
+  const d = { ...CHEIO, pagamento: 'Numerário', pagarNoLevantamento: 'nao' };
+  assert.match(msgEmpresa(d), /Forma: Numerário/);
+  assert.match(msgCliente(d), /Numerário/);
+});

@@ -128,15 +128,15 @@ test('C4: a validação do passo trata caixas e rádios, não só texto', () => 
 
 /* ---------- C5: pagamento ---------- */
 
-test('C5: as formas de pagamento são e-Mola, M-Pesa e transferência bancária', () => {
-  const esperado = ['e-Mola', 'M-Pesa', 'Transferência bancária'];
+test('C5/10B.5: as formas de pagamento são numerário, e-Mola, M-Pesa e transferência bancária (a mesma lista no site e no servidor)', () => {
+  const esperado = ['Numerário', 'e-Mola', 'M-Pesa', 'Transferência bancária'];
   assert.deepEqual(PAGAMENTOS, esperado);
   assert.deepEqual(PAGAMENTOS_SERVIDOR, esperado);
   const radios = [...seccao(2).matchAll(/name="pagamento" value="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(radios, esperado);
 });
 
-test('8C/C8: e-Mola e M-Pesa no MESMO cartão; a transferência noutro', () => {
+test('8C/C8/10B.5: e-Mola e M-Pesa no MESMO cartão; numerário e transferência noutros', () => {
   const s = seccao(2);
   const movel = /<div class="opcao opcao--movel">([\s\S]*?)<\/div>/.exec(s)?.[1];
   assert.ok(movel, 'não há cartão de dinheiro móvel');
@@ -152,8 +152,11 @@ test('8C/C8: "quando paga" explica as duas alturas', () => {
   assert.match(bloco, /No acto de levantamento<small>Na província de destino<\/small>/);
 });
 
-test('C5: nunca cartão de crédito nem numerário no formulário', () => {
-  assert.doesNotMatch(TPL, /cart[ãa]o|Visa|MasterCard|Numerário/i);
+test('C5/10B.5: nunca cartão de crédito no formulário; o numerário voltou, é a primeira opção e vem marcada', () => {
+  assert.doesNotMatch(TPL, /cart[ãa]o|Visa|MasterCard/i);
+  const radios = [...seccao(2).matchAll(/<input type="radio" name="pagamento" value="([^"]+)"( checked)?>/g)];
+  assert.equal(radios[0][1], 'Numerário');
+  assert.deepEqual(radios.filter((r) => r[2]).map((r) => r[1]), ['Numerário']);
 });
 
 test('C5: "quando paga" tem as duas opções, nenhuma imposta', () => {

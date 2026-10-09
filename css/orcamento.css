@@ -110,7 +110,8 @@
 .opcao:has(input:checked) { border-color: var(--verde); background: rgb(var(--verde-rgb) / .1); }
 
 /* 8C/C8: e-Mola e M-Pesa num cartão só, a transferência no outro. */
-@media (min-width: 460px) { .opcoes.opcoes--pag { grid-template-columns: 3fr 2fr; } }
+/* 10B.5: três cartões (numerário, dinheiro móvel, transferência) — um por linha. */
+.opcoes.opcoes--pag { grid-template-columns: 1fr; }
 .opcao--movel { flex-direction: column; align-items: stretch; gap: 10px; cursor: default; }
 .opcao__subs { display: flex; gap: 8px; }
 .opcao .opcao__sub {

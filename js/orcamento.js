@@ -23,7 +23,7 @@ export const PROVINCIAS = [
 ];
 
 /* C5: as formas que o cliente corrigiu. Nunca cartão de crédito. */
-export const PAGAMENTOS = ['e-Mola', 'M-Pesa', 'Transferência bancária'];
+export const PAGAMENTOS = ['Numerário', 'e-Mola', 'M-Pesa', 'Transferência bancária'];
 
 /* ---------- Telefones da empresa ----------
    DOIS números, dois papéis (Fase 9, D38 em `docs/decisoes.md`):

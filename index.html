@@ -231,11 +231,11 @@
       </details>
       <details class="faq__i">
         <summary class="faq__p">Como posso pagar?</summary>
-        <div class="faq__r"><p>Por <b>dinheiro móvel</b> (e-Mola ou M-Pesa) ou <b>transferência bancária</b>. Pode pagar no acto de envio ou no <b>levantamento</b>, na província de destino.</p></div>
+        <div class="faq__r"><p>Em <b>numerário</b>, por <b>dinheiro móvel</b> (e-Mola ou M-Pesa) ou por <b>transferência bancária</b>. Pode pagar no acto de envio ou no <b>levantamento</b>, na província de destino.</p></div>
       </details>
       <details class="faq__i">
-        <summary class="faq__p">Transportam para fora de Moçambique?</summary>
-        <div class="faq__r"><p>Sim. Trabalhamos com parceiros aéreos e rodoviários para Angola, África do Sul e Zimbabwe. Fale connosco para o seu destino específico.</p></div>
+        <summary class="faq__p">Trabalham para fora do país?</summary>
+        <div class="faq__r"><p>Sim. Enviamos para qualquer país, através da nossa rede de parceiros aéreos e rodoviários. Fale connosco para saber prazo e preço para o seu destino.</p></div>
       </details>
       <details class="faq__i">
         <summary class="faq__p">Que documentos preciso de entregar?</summary>
@@ -568,10 +568,12 @@
                  dois rádios continuam separados lá dentro: o valor guardado
                  é o mesmo de sempre, e a JVI sabe por qual dos dois cobrar. -->
             <div class="opcoes opcoes--pag" role="radiogroup" aria-labelledby="rotPag">
+              <!-- 10B.8: Numerário (dinheiro físico) é a primeira opção. -->
+              <label class="opcao"><input type="radio" name="pagamento" value="Numerário" checked> <span>Numerário<small>Dinheiro</small></span></label>
               <div class="opcao opcao--movel">
                 <span class="opcao__t">Dinheiro móvel<small>Movitel ou Vodacom</small></span>
                 <span class="opcao__subs">
-                  <label class="opcao__sub"><input type="radio" name="pagamento" value="e-Mola" checked> e-Mola</label>
+                  <label class="opcao__sub"><input type="radio" name="pagamento" value="e-Mola"> e-Mola</label>
                   <label class="opcao__sub"><input type="radio" name="pagamento" value="M-Pesa"> M-Pesa</label>
                 </span>
               </div>

@@ -1066,3 +1066,14 @@ mais larga (cerca de 63 px a 8 px de letra) entra no mesmo algoritmo de
 colocação, que a desloca em vez de a esconder; os testes de `etiquetas.test.js`
 (sem cruzamentos, sem tapar pontos, dentro do canvas) correm com ela a 320, 360,
 390, 768 e 1440 px, mais um teste novo que fixa o texto.
+
+### D57 — FAQ de fora do país e de pagamento; «Numerário» no formulário e no servidor (10B.5)
+
+| Decisão | Razão |
+|---|---|
+| FAQ «Trabalham para fora do país?» (era «Transportam para fora de Moçambique?»): «Sim. Enviamos para qualquer país, através da nossa rede de parceiros aéreos e rodoviários. Fale connosco para saber prazo e preço para o seu destino.» | Texto do cliente; já não lista só Angola, África do Sul e Zimbabwe. |
+| FAQ “Como posso pagar?”: «Em numerário, por dinheiro móvel (e-Mola ou M-Pesa) ou por transferência bancária. Pode pagar no acto de envio ou no levantamento, na província de destino.» | Texto do cliente. Prazos (24–72 h úteis) não se mexeram. |
+| `PAGAMENTOS = ['Numerário', 'e-Mola', 'M-Pesa', 'Transferência bancária']`, igual em `js/orcamento.js` e `functions/submit.js` | O teste `C5/10B.5` compara as duas listas com a lista esperada; o servidor rejeita qualquer outro valor (continua a rejeitar «Cartão de crédito»). |
+| «Numerário» é a primeira opção do passo 3 e vem **marcada por omissão** (era e-Mola); o valor de omissão de `dados()` (`PAGAMENTOS[0]`) acompanha | A ordem pedida põe-no primeiro. Decisão minha: o cliente não disse qual é o valor por omissão; dinheiro físico é o que o balcão da agência mais recebe. Basta mover o `checked` no HTML para mudar. |
+| Os três cartões de pagamento (numerário, dinheiro móvel com e-Mola/M-Pesa dentro, transferência) ficam um por linha em qualquer largura | Com 3 cartões a grelha de `3fr 2fr` partia em duas linhas desiguais; uma coluna é previsível. |
+| O texto das mensagens (WhatsApp/email/folha) usa `d.pagamento` tal como vem: «Forma: Numerário». Sem campo de destino novo; número de envio e regras de preço intactos | Nada a mudar nas mensagens além do valor novo (teste em `orcamento.test.js`). |

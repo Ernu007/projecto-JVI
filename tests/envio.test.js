@@ -58,7 +58,7 @@ test('dados le o formulario para um objecto simples e aparado', () => {
 
 test('dados cai nos valores por omissao quando os radios nao existem', () => {
   const d = dados(FORM_FALSO({ nome: 'Ana' }));
-  assert.equal(d.pagamento, 'e-Mola');
+  assert.equal(d.pagamento, 'Numerário');
   assert.equal(d.pagarNoLevantamento, 'sim');
   assert.equal(d.apelido, '');
 });
