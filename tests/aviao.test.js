@@ -57,3 +57,10 @@ for (const [w, h] of CANVAS) {
     assert.ok(a.y < sede.y0 - 20, 'o avião parado devia estar bem acima de Maputo, a meio do percurso');
   });
 }
+
+test('10D: o avião voa mesmo com "reduzir movimento" (Remover animações no Android)', async () => {
+  const fonte = fs.readFileSync('js/hero-voo.js', 'utf8');
+  assert.match(fonte, /export const RESPEITAR_REDUZIR_MOVIMENTO = false;/,
+    'o voo voltou a parar com prefers-reduced-motion — no telemóvel do cliente o avião deixa de voar');
+  assert.match(fonte, /const reduzir = RESPEITAR_REDUZIR_MOVIMENTO &&/);
+});

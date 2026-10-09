@@ -291,6 +291,9 @@ export function aviaoParado(w, h) {
   return { x: p.x, y: p.y, ang: Math.atan2(q.y - p.y, q.x - p.x), tam };
 }
 
+/* Fase 10D: false = o avião voa sempre, mesmo com "reduzir movimento". */
+export const RESPEITAR_REDUZIR_MOVIMENTO = false;
+
 export function iniciarVoo(canvas, opcoes = {}) {
   const aoProgredir = opcoes.aoProgredir || (() => {});
   const ctxEcra = canvas.getContext('2d', { alpha: true });
@@ -299,7 +302,14 @@ export function iniciarVoo(canvas, opcoes = {}) {
      `camadaFundo` o troca pelo da camada estática. */
   let ctx = ctxEcra;
 
-  const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* Fase 10D: o voo corre mesmo com "reduzir movimento". No telemóvel do
+     Ernu o avião não voava e o carrossel não rodava — as duas coisas que só
+     param com `prefers-reduced-motion`, que o Android liga com "Remover
+     animações". O cliente quer o avião a voar no telemóvel; é um elemento
+     da marca, pequeno, que não pisca nem ocupa o ecrã todo. O ramo estático
+     fica para quem o reactivar com RESPEITAR_REDUZIR_MOVIMENTO. */
+  const reduzir = RESPEITAR_REDUZIR_MOVIMENTO &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let w = 0, h = 0, dpr = 1;
   let esc = 1, ox = 0, oy = 0;

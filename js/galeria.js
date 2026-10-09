@@ -111,7 +111,11 @@ export function iniciarCarrossel(raiz) {
   function parar() { clearInterval(relogio); relogio = null; }
   function arrancar() {
     parar();
-    if (movimento.matches || document.hidden || Object.values(pausa).some(Boolean)) return;
+    /* Fase 10D: roda SEMPRE, também com "reduzir movimento". No Android
+       ("Remover animações", ligado em muitos telemóveis) o carrossel ficava
+       parado na primeira foto, e o cliente quer que passe sozinho. O que o
+       reduced-motion tira é a transição (galeria.css): a troca é instantânea. */
+    if (document.hidden || Object.values(pausa).some(Boolean)) return;
     relogio = setInterval(() => ir(i + 1), INTERVALO_MS);
   }
 

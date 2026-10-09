@@ -265,16 +265,16 @@ test('10B.6: pára fora do ecrã e com o separador oculto', async () => {
   } finally { fim(); }
 });
 
-test('10B.6: com prefers-reduced-motion não roda sozinho, mas o deslize e o teclado continuam', async () => {
+test('10D: com prefers-reduced-motion ("Remover animações" no Android) roda na mesma, e o deslize continua', async () => {
   const c = await arrancar({ reduzido: true });
   try {
-    mock.timers.tick(c.INTERVALO_MS * 5);
-    assert.equal(c.activo(), 0, 'rodou sozinho com movimento reduzido');
+    mock.timers.tick(c.INTERVALO_MS);
+    assert.equal(c.activo(), 1, 'com movimento reduzido o carrossel ficou parado na primeira foto');
+    mock.timers.tick(c.INTERVALO_MS);
+    assert.equal(c.activo(), 2);
     c.emitir('pointerdown', { pointerType: 'touch', clientX: 200, clientY: 100 });
     c.emitir('pointerup', { pointerType: 'touch', clientX: 100, clientY: 100 });
-    assert.equal(c.activo(), 1, 'o deslize deixou de funcionar');
-    mock.timers.tick(c.INTERVALO_MS * 5);
-    assert.equal(c.activo(), 1);
+    assert.equal(c.activo(), 3, 'o deslize deixou de funcionar');
   } finally { fim(); }
 });
 

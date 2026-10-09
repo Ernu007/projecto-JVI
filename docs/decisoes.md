@@ -1186,3 +1186,16 @@ Testes em `tests/aviao.test.js`.
 ### D65 — verificação final da Fase 10C
 
 Chrome headless via DevTools (`.tmp/cdp.mjs`, `.tmp/v10c.mjs`), servidor estático na porta 8151, cache desligada, 360×640 (DPR 3), 360×740 (DPR 2), 393×800 (DPR 2,75), 320×640, 768×1024 e 1440×900, cada um com e sem `prefers-reduced-motion`. Sem erros de consola em nenhum; `scrollWidth` = largura do ecrã em todos; botões do hero com a mesma altura em todos (54 px a 360–393, 72 px a 320 porque «Como chegar à JVI» quebra em 3 linhas, 52 px a 768, 60 px a 1440). O mapa e os botões do hero ficam inteiros no primeiro ecrã a 360×640, 360×740 e 393×800 (mapa termina em y 615–617). Capturas vistas: `.tmp/10c-*.png`.
+
+### D66 — o avião e o carrossel não respeitam "reduzir movimento" (10D)
+
+No telemóvel do Ernu o carrossel não rodava e o avião não voava; no Chrome do PC
+ambos funcionavam. A única coisa que pára os dois é `prefers-reduced-motion`, que o
+Android liga com "Remover animações" (comum em telemóveis Xiaomi/Redmi e com poupança
+de bateria). Reproduzido no Chrome emulando `prefers-reduced-motion: reduce`: o
+carrossel ficou na foto 1.
+
+| Decisão | Razão |
+|---|---|
+| O carrossel roda sempre (a cada 2 s); com movimento reduzido a troca é instantânea, sem transição | O cliente quer o carrossel automático; quem tem "Remover animações" não pediu "carrossel parado", pediu menos animação de sistema. Continua a pausar com o toque, o rato, o foco e fora do ecrã (WCAG 2.2.2). |
+| O avião voa sempre (`RESPEITAR_REDUZIR_MOVIMENTO = false` em `js/hero-voo.js`) | Pedido explícito do Ernu ("o mapa deve mostrar o avião na versão mobile"). Revertível mudando a constante. Compromisso consciente com o WCAG 2.3.3 (AAA, não obrigatório). |
