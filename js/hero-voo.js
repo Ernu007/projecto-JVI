@@ -159,6 +159,9 @@ function cruzam(a, b) {
 }
 
 /** Caixas e posições das etiquetas do mapa para um canvas `w` x `h`. */
+/** O texto da etiqueta de Maputo, a sede da JVI. Só no mapa. */
+export const ROTULO_SEDE = 'Maputo — Sede';
+
 export function etiquetasDoMapa(w, h) {
   const { esc, ox, oy } = geometriaDoMapa(w, h);
   const pequeno = w < ECRA_PEQUENO;
@@ -214,7 +217,8 @@ export function etiquetasDoMapa(w, h) {
   for (const nome of ROTA) {
     const c = CAPITAIS[nome];
     if (!c) continue;
-    colocar('cidade', nome, c.nome, tamCidade, false, c, todas);
+    // Fase 10B (10B.4): a sede diz-se no mapa, como no mapa antigo («Maputo — Sede»).
+    colocar('cidade', nome, nome === 'Maputo' ? ROTULO_SEDE : c.nome, tamCidade, false, c, todas);
   }
   // 2.º os nomes das províncias, só quando dizem algo que a cidade não diz
   for (const nome of ROTA) {

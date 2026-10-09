@@ -1054,3 +1054,15 @@ vermelho, grande, numa faixa de 44 px por cima do texto.
 | Cartão **branco com borda e sombra leve** (`--c-fundo`, `--borda-forte`), texto preto, pin `var(--maps)` | Em Contactos o vidro (3 % de preto) parecia só texto; branco com borda lê-se como botão no fundo escuro do hero e no claro de Contactos. Não é verde nem sólido de cor: continua secundário. |
 | `#EA4335` entra como o token `--maps`, declarado uma vez em `:root` | O teste `10.1: sem … cores do Google` proibia o literal; passou a admitir só essa declaração. A paleta não foi mexida. |
 | O percurso com setas continua só em Contactos (o hero não o ganha) | O hero tem de ficar curto (10.3). |
+
+### D56 — «Maputo — Sede» no mapa (10B.4)
+
+A etiqueta de Maputo no mapa do hero passa de «Maputo» a «Maputo — Sede»
+(travessão, como o mapa antigo, `a12bf1f:js/main.js:468`, que escrevia
+«Maputo · Sede»). Só no mapa: `CAPITAIS.Maputo.nome` continua «Maputo» (o teste C3
+e o resto do site dependem disso). A constante `ROTULO_SEDE` vive em
+`js/hero-voo.js` e `etiquetasDoMapa` usa-a para a cidade de Maputo. A etiqueta
+mais larga (cerca de 63 px a 8 px de letra) entra no mesmo algoritmo de
+colocação, que a desloca em vez de a esconder; os testes de `etiquetas.test.js`
+(sem cruzamentos, sem tapar pontos, dentro do canvas) correm com ela a 320, 360,
+390, 768 e 1440 px, mais um teste novo que fixa o texto.

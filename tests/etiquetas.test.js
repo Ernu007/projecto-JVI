@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { etiquetasDoMapa, geometriaDoMapa, raioAgencia } from '../js/hero-voo.js';
+import { etiquetasDoMapa, geometriaDoMapa, raioAgencia, ROTULO_SEDE } from '../js/hero-voo.js';
 import { CAPITAIS, ROTA, BBOX } from '../js/mapa-dados.js';
 
 /* Fase 10 (10.7). A 360 px "MANICA" caía em cima de "SOFALA" e "Chimoio" em
@@ -51,5 +51,18 @@ test('não se repete o nome da província quando a cidade tem o mesmo nome', () 
   for (const nome of ROTA) {
     if (CAPITAIS[nome].nome.toLowerCase() !== nome.toLowerCase()) continue;
     assert.ok(!et.some((e) => e.tipo === 'provincia' && e.nome === nome), `${nome} escrito duas vezes`);
+  }
+});
+
+test('10B.4: a etiqueta de Maputo é «Maputo — Sede» (travessão), e só essa', () => {
+  assert.equal(ROTULO_SEDE, 'Maputo — Sede');
+  for (const [w, h] of TAMANHOS) {
+    const et = etiquetasDoMapa(w, h);
+    const maputo = et.filter((e) => e.tipo === 'cidade' && e.nome === 'Maputo');
+    assert.equal(maputo.length, 1, `${w}x${h}: etiquetas de Maputo`);
+    assert.equal(maputo[0].texto, 'Maputo — Sede');
+    assert.equal(et.filter((e) => /Sede/.test(e.texto)).length, 1, 'só Maputo é sede');
+    /* A etiqueta é mais larga do que "Maputo" e continua dentro do canvas. */
+    assert.ok(maputo[0].x1 - maputo[0].x0 > 60);
   }
 });
