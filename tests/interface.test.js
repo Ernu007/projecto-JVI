@@ -101,7 +101,7 @@ test('todos os botões de WhatsApp do site têm o ícone do WhatsApp', () => {
      genérico — três botões, cinco svg, nenhum deles o do WhatsApp. */
   const semIcone = [];
   const conta = [...HTML.matchAll(/<a\b[^>]*href="https:\/\/wa\.me\/[^"]*"[\s\S]*?<\/a>/g)];
-  assert.ok(conta.length >= 4, `só encontrei ${conta.length} botões de WhatsApp — espero ao menos 4`);
+  assert.ok(conta.length >= 3, `só encontrei ${conta.length} botões de WhatsApp — espero ao menos 3`);
   for (const m of conta) {
     const d = pathsDe(m[0]);
     if (!d.some((p) => p.startsWith(ICO_WHATSAPP))) {

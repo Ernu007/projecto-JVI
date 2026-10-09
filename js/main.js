@@ -75,6 +75,33 @@ function aoDeslocar() {
 window.addEventListener('scroll', aoDeslocar, { passive: true });
 aoDeslocar();
 
+/* Fase 10B: menu de âncoras. O item da secção visível leva aria-current.
+   Escolhe-se a última secção cujo topo já passou da linha do cabeçalho;
+   o IntersectionObserver só avisa quando alguma muda de estado. */
+const ligacoesMenu = [...document.querySelectorAll('.nav a[href^="#"], .menu a[href^="#"]')];
+const seccoesMenu = ['inicio', 'servicos', 'orcamento', 'sobre', 'contactos']
+  .map((id) => document.getElementById(id)).filter(Boolean);
+function marcarSeccaoActual() {
+  const linha = header.offsetHeight + 24;
+  let actual = seccoesMenu[0];
+  for (const s of seccoesMenu) if (s.getBoundingClientRect().top <= linha) actual = s;
+  /* No fim da página, a última secção pode ser curta demais para chegar à linha. */
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+    actual = seccoesMenu[seccoesMenu.length - 1];
+  }
+  ligacoesMenu.forEach((a) => {
+    if (a.getAttribute('href') === `#${actual?.id}`) a.setAttribute('aria-current', 'true');
+    else a.removeAttribute('aria-current');
+  });
+}
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(marcarSeccaoActual, { threshold: [0, 0.1, 0.5, 1] });
+  seccoesMenu.forEach((s) => io.observe(s));
+}
+window.addEventListener('scroll', marcarSeccaoActual, { passive: true });
+window.addEventListener('resize', marcarSeccaoActual);
+marcarSeccaoActual();
+
 /* =========================================================
    HERO — voo da carga (Maputo -> Pemba -> Maputo, em loop) e
    revelacao do titulo
@@ -83,7 +110,7 @@ import { iniciarVoo } from './hero-voo.js';
 
 function iniciarHero() {
   const canvas = document.getElementById('canvasHero');
-  const hero = document.getElementById('hero');
+  const hero = document.getElementById('inicio');
   if (!canvas || !hero) return;
 
   /* Cada palavra do título acende quando o avião entra na província
@@ -214,7 +241,7 @@ import {
   iniciarOrcamento, linhasResumo, planoEnvio,
 } from './orcamento.js';
 
-/* Fase 10: o formulário vive na página `orcamento.html`, dentro de
+/* Fase 10: o formulário vive na secção `#orcamento` de `index.html`, dentro de
    `#orcRaiz`. Nas outras páginas não há `#orcRaiz` e nada disto arranca:
    `iniciarOrcamento(null)` devolve logo. */
 document.getElementById('orcRaiz')?.append(

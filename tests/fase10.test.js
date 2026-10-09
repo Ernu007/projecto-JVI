@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { NOMES, PAGINAS, SITE } from './paginas.js';
+import { ORDEM, SITE, seccao } from './paginas.js';
 
 /* ---------------------------------------------------------------------------
-   FASE 10 — o site em cinco páginas
+   FASE 10 / 10B — o site em UMA página com cinco secções (a 10B revogou as cinco páginas)
 
    O cliente achou o site "demasiado robusto": informação a mais, repetida,
    scroll longo. O Ernu aprovou cinco páginas HTML estáticas (Início,
@@ -14,11 +14,11 @@ import { NOMES, PAGINAS, SITE } from './paginas.js';
    --------------------------------------------------------------------------- */
 
 const MENU = [
-  ['index.html', 'Início'],
-  ['servicos.html', 'Serviços'],
-  ['sobre.html', 'Sobre nós'],
-  ['orcamento.html', 'Orçamento'],
-  ['contactos.html', 'Contactos'],
+  ['#inicio', 'Início'],
+  ['#servicos', 'Serviços'],
+  ['#orcamento', 'Orçamento'],
+  ['#sobre', 'Sobre nós'],
+  ['#contactos', 'Contactos'],
 ];
 
 const entre = (html, abre, fecha) => {
@@ -27,8 +27,7 @@ const entre = (html, abre, fecha) => {
   assert.ok(i >= 0 && j > i, `não encontrei ${abre} … ${fecha}`);
   return html.slice(i, j + fecha.length);
 };
-const semMarca = (html) => html.replace(/ aria-current="page"/g, '');
-/** O texto visível de uma página: sem <script>, <template>, comentários e etiquetas. */
+/** O texto visível: sem <script>, <template>, comentários e etiquetas. */
 const texto = (html) => html
   .replace(/<script[\s\S]*?<\/script>/g, ' ')
   .replace(/<template[\s\S]*?<\/template>/g, ' ')
@@ -37,162 +36,139 @@ const texto = (html) => html
   .replace(/<[^>]+>/g, ' ')
   .replace(/&amp;/g, '&')
   .replace(/\s+/g, ' ');
-/** O <main> de uma página, sem o rodapé (que se repete de propósito). */
 const principal = (html) => entre(html, '<main', '</main>');
 
-test('10.2: há exactamente cinco páginas, e são as que o Ernu aprovou', () => {
-  assert.deepEqual(NOMES, MENU.map(([f]) => f));
-  for (const n of NOMES) assert.ok(fs.existsSync(n), `${n} não existe`);
-});
-
-test('10.2: o menu tem cinco itens, pela ordem, e marca a página actual', () => {
-  for (const [pagina, html] of Object.entries(PAGINAS)) {
-    const nav = entre(html, '<nav class="nav"', '</nav>');
-    const itens = [...nav.matchAll(/<a href="([^"]+)"( aria-current="page")?>([^<]+)<\/a>/g)];
-    assert.deepEqual(itens.map((m) => [m[1], m[3]]), MENU, `${pagina}: o menu mudou`);
-    const actuais = itens.filter((m) => m[2]).map((m) => m[1]);
-    assert.deepEqual(actuais, [pagina], `${pagina}: aria-current devia estar só na própria página`);
-
-    const movel = entre(html, '<nav class="menu"', '</nav>');
-    const itensMovel = [...movel.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
-    assert.deepEqual(itensMovel, MENU, `${pagina}: o menu móvel diverge do de topo`);
+test('10B.1: o site é uma só página, e as quatro páginas extra foram apagadas', () => {
+  assert.ok(fs.existsSync('index.html'));
+  for (const n of ['servicos.html', 'sobre.html', 'orcamento.html', 'contactos.html']) {
+    assert.ok(!fs.existsSync(n), `${n} devia ter sido apagada`);
   }
+  assert.deepEqual(fs.readdirSync('.').filter((f) => f.endsWith('.html')), ['index.html']);
 });
 
-test('10.2: o cabeçalho e o rodapé são iguais nas cinco páginas', () => {
-  const cabecalho = (h) => semMarca(entre(h, '<header', '</header>'));
-  const rodape = (h) => entre(h, '<footer', '</footer>');
-  const fixos = (h) => entre(h, '<nav class="fixos"', '</nav>');
-  for (const parte of [cabecalho, rodape, fixos]) {
-    const [primeira, ...outras] = NOMES.map((n) => parte(PAGINAS[n]));
-    for (const [i, outra] of outras.entries()) {
-      assert.equal(outra, primeira, `${NOMES[i + 1]}: ${parte.name} diverge do de ${NOMES[0]}`);
-    }
-  }
+test('10B.1: as cinco secções estão pela ordem Início, Serviços, Orçamento, Sobre nós, Contactos', () => {
+  const main = principal(SITE);
+  const ids = [...main.matchAll(/<section\b[^>]*\bid="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(ids, ORDEM);
+  /* O orçamento (com as FAQ) vem ANTES de Sobre nós. */
+  assert.ok(main.indexOf('id="faq"') < main.indexOf('id="sobre"'));
 });
 
-test('10.2: o cabeçalho não tem botão "Pedir orçamento" — o cliente riscou-o', () => {
-  for (const [pagina, html] of Object.entries(PAGINAS)) {
-    const cab = entre(html, '<header', '</header>');
-    assert.doesNotMatch(cab, /Pedir orçamento|<button class="btn|header__cta/, `${pagina}: o cabeçalho voltou a ter o botão de orçamento`);
-    assert.doesNotMatch(html, /data-abrir-orc/, `${pagina}: sobrou um gatilho do pop-up antigo`);
-  }
+test('10B.1: o menu tem cinco âncoras, pela ordem, no cabeçalho e no menu móvel', () => {
+  const nav = entre(SITE, '<nav class="nav"', '</nav>');
+  const itens = [...nav.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
+  assert.deepEqual(itens, MENU);
+  const movel = entre(SITE, '<nav class="menu"', '</nav>');
+  assert.deepEqual([...movel.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]), MENU);
+  for (const [href] of MENU) assert.ok(SITE.includes(`id="${href.slice(1)}"`), `${href} não existe`);
 });
 
-test('10.2: cada página tem um só <h1>, um título próprio e um canonical próprio', () => {
-  const titulos = new Set();
-  for (const [pagina, html] of Object.entries(PAGINAS)) {
-    assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, `${pagina}: tem de ter um só h1`);
-    const t = /<title>([^<]+)<\/title>/.exec(html)?.[1];
-    assert.ok(t && !titulos.has(t), `${pagina}: título repetido ou em falta`);
-    titulos.add(t);
-    assert.match(html, new RegExp(`<link rel="canonical" href="https://jvicargaservicos\\.co\\.mz/${pagina}">`));
-  }
+test('10B.1: o item da secção visível leva aria-current (IntersectionObserver) e o cabeçalho é compensado', () => {
+  const js = fs.readFileSync('js/main.js', 'utf8');
+  assert.match(js, /new IntersectionObserver\(marcarSeccaoActual/);
+  assert.match(js, /setAttribute\('aria-current'/);
+  const css = fs.readFileSync('css/styles.css', 'utf8');
+  assert.match(css, /\.hero,\s*\.secao-pagina\s*\{\s*scroll-margin-top:\s*\d+px/);
+  assert.match(css, /html\s*\{[^}]*scroll-behavior:\s*smooth/);
 });
 
-test('10.2: cada informação aparece uma só vez', () => {
-  const corpo = Object.fromEntries(Object.entries(PAGINAS).map(([n, h]) => [n, texto(principal(h))]));
-  const todo = Object.values(corpo).join(' | ');
+test('10B.1: o cabeçalho não tem botão "Pedir orçamento" — o cliente riscou-o', () => {
+  const cab = entre(SITE, '<header', '</header>');
+  assert.doesNotMatch(cab, /Pedir orçamento|<button class="btn|header__cta/);
+  assert.doesNotMatch(SITE, /data-abrir-orc/);
+});
+
+test('10B.1: um só <h1> (o do hero); as outras secções abrem com <h2>', () => {
+  assert.equal((SITE.match(/<h1[\s>]/g) ?? []).length, 1);
+  assert.match(seccao('inicio'), /<h1>/);
+  for (const id of ORDEM.slice(1)) assert.match(seccao(id), new RegExp(`<h2 id="t-${id}">`), `#${id} sem título`);
+  assert.equal((SITE.match(/<link rel="canonical"/g) ?? []).length, 1);
+});
+
+test('10B.1: cada informação aparece uma só vez', () => {
+  const corpo = texto(principal(SITE));
 
   /* O mapa de Moçambique é só o do hero. */
   assert.equal((SITE.match(/<canvas\b/g) ?? []).length, 1, 'há mais de um canvas no site');
-  assert.match(PAGINAS['index.html'], /<canvas id="canvasHero"/);
+  assert.match(seccao('inicio'), /<canvas id="canvasHero"/);
   assert.doesNotMatch(SITE, /canvasMapa|id="cobertura"|class="rotas"/, 'a secção Cobertura voltou');
 
-  /* "10+ anos" já não existe como prova; a experiência diz-se uma vez, em Sobre nós. */
   assert.doesNotMatch(SITE, /10\+ anos|hero__provas|class="prova"/);
-  assert.equal((todo.match(/dez anos|10 anos/gi) ?? []).length, 1);
+  assert.equal((corpo.match(/dez anos|10 anos/gi) ?? []).length, 1);
 
-  /* Credenciais: no corpo, só em Sobre nós (e no rodapé legal, que é igual em todas). */
-  for (const n of NOMES) {
-    const tem = /NUEL|NUIT|8732\/11\/04\/PS\/2014/.test(corpo[n]);
-    assert.equal(tem, n === 'sobre.html', `${n}: credenciais ${tem ? 'presentes' : 'em falta'} no corpo`);
+  /* Credenciais no corpo: só em Sobre nós (o rodapé legal fica fora do <main>). */
+  for (const id of ORDEM) {
+    const tem = /NUEL|NUIT|8732\/11\/04\/PS\/2014/.test(texto(seccao(id)));
+    assert.equal(tem, id === 'sobre', `#${id}: credenciais ${tem ? 'presentes' : 'em falta'}`);
   }
 
-  /* A lista de cidades não se repete em lado nenhum do texto visível. */
   assert.doesNotMatch(SITE, /Xai-Xai[^"]*Inhambane[^"]*Beira/, 'a lista de cidades voltou');
   assert.doesNotMatch(SITE, /rodape__seo/, 'o bloco SEO do rodapé voltou');
 
-  /* O preço escreve-se uma vez, na página do orçamento (o formulário calcula-o). */
-  const comPreco = NOMES.filter((n) => /255 MT/.test(corpo[n]));
-  assert.deepEqual(comPreco, ['orcamento.html']);
-  assert.equal((corpo['orcamento.html'].match(/255 MT/g) ?? []).length, 1);
+  /* O preço escreve-se uma vez, em Orçamento (o formulário calcula-o). */
+  assert.equal((corpo.match(/255 MT/g) ?? []).length, 1);
+  assert.match(texto(seccao('orcamento')), /255 MT/);
 
-  /* Os contactos escrevem-se na página de Contactos; as outras só linkam. */
-  for (const n of NOMES.filter((x) => x !== 'contactos.html')) {
-    assert.doesNotMatch(corpo[n], /\+258|jvicargaservicos@gmail\.com|Nº 113/, `${n}: repete contactos que vivem em Contactos`);
+  /* Os contactos escrevem-se em Contactos; as outras secções só linkam. */
+  for (const id of ORDEM.filter((x) => x !== 'contactos')) {
+    assert.doesNotMatch(texto(seccao(id)), /\+258|jvicargaservicos@gmail\.com|Nº 113/, `#${id} repete contactos`);
   }
+  /* O resumo de serviços do Início já não existe: Serviços diz-se uma vez. */
+  assert.doesNotMatch(SITE, /resumo__i|resumo__mais/);
 });
 
-test('10.2: o Início tem o hero e os três serviços em resumo, e mais nada', () => {
-  const main = principal(PAGINAS['index.html']);
-  const seccoes = [...main.matchAll(/<section\b[^>]*id="([^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(seccoes, ['hero', 'resumo']);
-  assert.equal((main.match(/<li class="resumo__i">/g) ?? []).length, 3);
-  assert.match(main, /<a class="resumo__mais" href="servicos\.html">/);
-  assert.doesNotMatch(main, /hero__provas|scroll-hint|percurso|Como chegar/, 'o hero voltou a ter provas, percurso ou "Como chegar"');
+test('10B.1: Serviços tem carga aérea, rodoviária e os quatro passos da recolha à entrega', () => {
+  const s = seccao('servicos');
+  assert.equal((s.match(/<article class="servico">/g) ?? []).length, 2);
+  assert.match(s, /Transporte aéreo/);
+  assert.match(s, /Transporte rodoviário/);
+  assert.equal((s.match(/<li class="passo">/g) ?? []).length, 4);
 });
 
-test('10.2: Serviços tem carga aérea, rodoviária e os quatro passos da recolha à entrega', () => {
-  const main = principal(PAGINAS['servicos.html']);
-  assert.equal((main.match(/<article class="servico">/g) ?? []).length, 2);
-  assert.match(main, /Transporte aéreo/);
-  assert.match(main, /Transporte rodoviário/);
-  assert.equal((main.match(/<li class="passo">/g) ?? []).length, 4);
-});
-
-test('10.2: o formulário e as perguntas frequentes (no máximo quatro) estão em Orçamento', () => {
-  for (const n of NOMES.filter((x) => x !== 'orcamento.html')) {
-    assert.doesNotMatch(PAGINAS[n], /id="tplOrc"|id="orcRaiz"|id="confirm"/, `${n}: tem partes do formulário`);
-  }
-  const o = PAGINAS['orcamento.html'];
-  assert.match(o, /<template id="tplOrc">/);
+test('10B.1: o formulário e as perguntas frequentes (no máximo quatro) estão em Orçamento', () => {
+  const o = seccao('orcamento');
+  assert.match(SITE, /<template id="tplOrc">/);
   assert.match(o, /<div class="orc-caixa" id="orcRaiz">/);
-  assert.match(o, /id="confirm"/);
+  assert.match(SITE, /id="confirm"/);
   const perguntas = o.match(/<details class="faq__i">/g) ?? [];
   assert.ok(perguntas.length >= 1 && perguntas.length <= 4, `${perguntas.length} perguntas frequentes`);
-  /* O formulário não ganhou campo de destino do envio: o cliente nunca vê o número. */
-  assert.doesNotMatch(o, /name="(destino|numeroDestino|whatsappDestino)"/);
+  assert.doesNotMatch(SITE, /name="(destino|numeroDestino|whatsappDestino)"/);
 });
 
-test('10.2: Contactos tem WhatsApp em destaque, telefone, email, morada e "Como chegar"', () => {
-  const main = principal(PAGINAS['contactos.html']);
-  assert.match(main, /<a class="btn btn--wa btn--grande btn--bloco" href="https:\/\/wa\.me\//);
-  assert.match(main, /href="tel:\+258844700012"/);
-  assert.match(main, /href="mailto:jvicargaservicos@gmail\.com"/);
-  assert.match(main, /Av\. 19 de Outubro, Terminal de Cargas Nº 113/);
-  assert.match(main, /Como chegar à JVI/);
-  assert.match(main, /3H9C%2BVJ8/, 'o Plus Code saiu do botão');
+test('10B.1: Contactos tem WhatsApp em destaque, telefone, email, morada e "Como chegar"', () => {
+  const c = seccao('contactos');
+  assert.match(c, /<a class="btn btn--wa btn--grande btn--bloco" href="https:\/\/wa\.me\//);
+  assert.match(c, /href="tel:\+258844700012"/);
+  assert.match(c, /href="mailto:jvicargaservicos@gmail\.com"/);
+  assert.match(c, /Av\. 19 de Outubro, Terminal de Cargas Nº 113/);
+  assert.match(c, /Como chegar à JVI/);
+  assert.match(c, /3H9C%2BVJ8/, 'o Plus Code saiu do botão');
 });
 
-test('10.2: a publicação, o sitemap e o robots conhecem as cinco páginas', () => {
+test('10B.1: a publicação, o sitemap e o robots conhecem só a página única', () => {
   const publicar = fs.readFileSync('tools/publicar.py', 'utf8');
   const sitemap = fs.readFileSync('sitemap.xml', 'utf8');
-  for (const n of NOMES) {
-    assert.ok(publicar.includes(`"${n}"`), `tools/publicar.py não lista ${n}`);
-    assert.ok(sitemap.includes(`https://jvicargaservicos.co.mz/${n === 'index.html' ? '' : n}</loc>`), `sitemap.xml não tem ${n}`);
-  }
+  assert.match(publicar, /PAGINAS = \["index\.html"\]/);
+  assert.doesNotMatch(publicar, /servicos\.html|sobre\.html|orcamento\.html|contactos\.html/);
+  assert.equal((sitemap.match(/<loc>/g) ?? []).length, 1);
+  assert.ok(sitemap.includes('<loc>https://jvicargaservicos.co.mz/</loc>'));
+  assert.doesNotMatch(sitemap, /\.html</);
+  const robots = fs.readFileSync('robots.txt', 'utf8');
+  assert.match(robots, /Sitemap: https:\/\/jvicargaservicos\.co\.mz\/sitemap\.xml/);
+  assert.doesNotMatch(robots, /\.html/);
 });
 
-test('10.2: todos os links internos apontam para páginas e ficheiros que existem', () => {
-  for (const [pagina, html] of Object.entries(PAGINAS)) {
-    for (const m of html.matchAll(/(?:href|src)="([^"#:]+?)(?:#[^"]*)?"/g)) {
-      const alvo = m[1];
-      if (/^(https?|mailto|tel|data):/.test(alvo) || alvo.startsWith('//')) continue;
-      assert.ok(fs.existsSync(alvo), `${pagina}: ${alvo} não existe`);
+test('10B.1: todos os links internos apontam para ficheiros e secções que existem', () => {
+  for (const m of SITE.matchAll(/(?:href|src)="([^"]+?)"/g)) {
+    const alvo = m[1];
+    if (/^(https?|mailto|tel|data):/.test(alvo) || alvo.startsWith('//')) continue;
+    if (alvo === '#') continue;
+    if (alvo.startsWith('#')) {
+      assert.ok(SITE.includes(`id="${alvo.slice(1)}"`), `${alvo} não existe`);
+      continue;
     }
+    assert.ok(fs.existsSync(alvo.split('#')[0]), `${alvo} não existe`);
   }
-});
-
-test('10.4: Sobre nós tem a galeria de seis fotografias, sem as que mostram números e IVA errados', () => {
-  const sobre = PAGINAS['sobre.html'];
-  const fotos = [...sobre.matchAll(/data-gal-src="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(fotos.length, 6);
-  assert.equal(new Set(fotos).size, 6);
-  /* O Airwaybill (IVA 17%) e o poster do terminal (outros telefones) não entram. */
-  assert.ok(!fotos.some((f) => /5e0f0d40bd0b|014b85241586/.test(f)));
-  assert.match(sobre, /data-gal-contador[^>]*>1 \/ 6</);
-  assert.match(sobre, /id="luz"/);
 });
 
 test('10.3: o hero é curto — nunca mais alto do que 720 px — e o telemóvel começa abaixo de 900 px', () => {

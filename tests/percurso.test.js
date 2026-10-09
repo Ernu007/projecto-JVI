@@ -23,7 +23,7 @@ import { MORADA_JVI, PASSOS_PERCURSO, NOTA_PERCURSO, linkDirecoes } from '../js/
    - não há distâncias nem tempos.
    --------------------------------------------------------------------------- */
 
-const HTML = fs.readFileSync('contactos.html', 'utf8');
+const HTML = fs.readFileSync('index.html', 'utf8');
 const CSS = fs.readFileSync('css/styles.css', 'utf8');
 
 const entidades = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" };

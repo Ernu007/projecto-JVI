@@ -29,9 +29,9 @@ RAIZ = Path(__file__).resolve().parent.parent
 DIST = RAIZ / "dist"
 
 # O que vai para o site. Tudo o que não está aqui NÃO é publicado.
-# Fase 10: as cinco páginas, uma a uma. Uma página nova tem de ser posta aqui
-# de propósito — não se publica por omissão.
-PAGINAS = ["index.html", "servicos.html", "sobre.html", "orcamento.html", "contactos.html"]
+# Fase 10B: o site é uma só página (cinco secções). Uma página nova tem de ser
+# posta aqui de propósito — não se publica por omissão.
+PAGINAS = ["index.html"]
 INCLUIR_ARVORE = [*PAGINAS, "robots.txt", "sitemap.xml", "carta"]
 INCLUIR_PASTAS = ["css", "js", "assets"]
 

@@ -134,7 +134,7 @@ test('10.3: o hero tem duas acções — o WhatsApp em destaque e o orçamento',
   assert.equal(accoes.length, 2);
   assert.match(accoes[0].atributos, /wa\.me\//, 'a primeira acção do hero deixou de ser o WhatsApp');
   assert.match(accoes[0].atributos, /class="btn btn--wa btn--grande"/);
-  assert.match(accoes[1].atributos, /href="orcamento\.html"/, 'a segunda acção deixou de levar ao orçamento');
+  assert.match(accoes[1].atributos, /href="#orcamento"/, 'a segunda acção deixou de levar ao orçamento');
   assert.doesNotMatch(accoes[1].atributos, /btn--primario|btn--wa/, 'o orçamento do hero compete com o WhatsApp');
 });
 

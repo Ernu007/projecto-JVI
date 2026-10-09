@@ -6,7 +6,7 @@ import {
   JVI_WHATSAPP, JVI_TELEFONE, normalizarTelefone, telefoneLegivel, linkWa,
 } from '../js/orcamento.js';
 import { telefoneCallback, RE_TEL, validar } from '../functions/submit.js';
-import { SITE, PAGINAS, NOMES } from './paginas.js';
+import { SITE, PAGINAS, NOMES, seccao } from './paginas.js';
 
 /* ---------------------------------------------------------------------------
    O NÚMERO DA EMPRESA MUDOU (D35 em docs/decisoes.md)
@@ -103,7 +103,7 @@ test('9.1: o JSON-LD leva o numero de chamadas como telephone, e o WhatsApp a pa
 });
 
 test('9.1: os contactos mostram os dois numeros, cada um com o seu rotulo', () => {
-  const cont = /<section\b[^>]*id="contactos"[^>]*>([\s\S]*?)<\/section>/.exec(PAGINAS['contactos.html'])[1];
+  const cont = seccao('contactos');
 
   /* WhatsApp: o botão grande, e por baixo o número com a nota "só mensagens". */
   const wa = /<a class="btn btn--wa[^"]*" href="(https:\/\/wa\.me\/[^"]+)"/.exec(cont);

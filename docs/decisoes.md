@@ -999,3 +999,30 @@ canto inferior direito):
 Fica por verificar: Safari/iOS e Firefox reais (só Chrome), e toque real em
 dispositivo; o teste do mapa estima larguras de texto, não as mede com a fonte
 carregada (a margem é conservadora, e a 360 px confirmou-se a olho).
+
+
+## Fase 10B — ajustes do cliente depois de ver a Fase 10 (09/10/2026)
+
+Fonte: `BRIEFING-FASE10B-AJUSTES.md` (notas de voz do Ernu). Prevalece sobre o
+briefing da Fase 10 onde houver conflito. Paleta aprovada: não se mexeu.
+
+### D53 — de volta a UMA página com scroll (10B.1) — revoga a decisão da 10.2
+
+O cliente não quer cinco ficheiros HTML com o menu a abrir outra página: quer
+abrir o site e fazer scroll. A decisão da 10.2 (cinco páginas estáticas) fica
+**revogada**. As «cinco páginas» são agora cinco secções de `index.html`, pela
+ordem pedida: Início (`#inicio`), Serviços (`#servicos`), Orçamento
+(`#orcamento`, com as FAQ, antes de Sobre nós), Sobre nós (`#sobre`),
+Contactos (`#contactos`).
+
+| Decisão | Razão |
+|---|---|
+| `servicos.html`, `sobre.html`, `orcamento.html`, `contactos.html` apagadas; `tools/publicar.py`, `sitemap.xml` (uma só URL) e `robots.txt` só conhecem `index.html` | O cliente não os quer. O `robots.txt` já não nomeava páginas. |
+| O hero passa de `id="hero"` a `id="inicio"` | O Início É o hero; um só id serve de âncora do menu e de alvo do JS do voo. |
+| A secção «Serviços em resumo» do Início sai | Repetia os dois serviços de Serviços (regra «cada informação aparece uma só vez»). |
+| O `<h1>` é só o do hero; cada outra secção abre com `<h2 id="t-…">` (classe `.pagina-topo`) e a secção tem `aria-labelledby` | Um só h1 por página; a estrutura de títulos continua válida. |
+| Cada secção de topo é `<section class="secao-pagina" tabindex="-1">`; as partes antigas (formulário/FAQ, empresa/galeria, …) são `<div class="seccao">` lá dentro | `tabindex="-1"` porque o teste de a11y exige que todo o alvo de âncora receba foco (WCAG 2.4.1); `outline:none` nesses alvos para não aparecer anel ao clicar no menu. |
+| Menu (5 itens, mesma ordem) com âncoras `#…`; `html { scroll-behavior: smooth }` já existia e desliga-se com `prefers-reduced-motion` | Scroll suave sem JS. |
+| Item activo: `aria-current="true"` posto por `marcarSeccaoActual` (IntersectionObserver + scroll/resize): a última secção cujo topo já passou da linha do cabeçalho; no fim da página, a última | O IntersectionObserver sozinho falha com secções muito altas (nenhuma passa o limiar); o cálculo é barato e só corre quando uma secção muda ou há scroll. `aria-current="true"` e não `page`: já não há páginas. |
+| `.hero, .secao-pagina { scroll-margin-top: 64px }` e `.pagina-topo` com 40 px de padding em cima (eram 112 px, que compensavam o cabeçalho fixo da página própria) | O título da secção não fica tapado pelo cabeçalho. Medido em 10B.8. |
+| Testes: `tests/paginas.js` exporta `SITE` (a página), `seccao(id)` e `ORDEM`; `tests/fase10.test.js` reescrito para as regras da 10B.1 (ordem, âncoras, a11y, uma só vez, links internos) | As regras de conteúdo mantêm-se; só mudou o sítio onde vivem. |

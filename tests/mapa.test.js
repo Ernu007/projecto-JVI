@@ -235,7 +235,7 @@ test('9.3: o hero não tem o cartão com a lista de nomes — o mapa já os escr
      rota por extenso, e este teste obrigava-a a acompanhar a `ROTA`. A
      remoção é intencional: o teste passa a impedir que ela volte. */
   const html = fs.readFileSync('index.html', 'utf8');
-  const hero = /<section class="hero" id="hero">([\s\S]*?)<\/section>/.exec(html)?.[1];
+  const hero = /<section class="hero" id="inicio"[^>]*>([\s\S]*?)<\/section>/.exec(html)?.[1];
   assert.ok(hero, 'não encontrei o hero');
   assert.doesNotMatch(html, /heroRota|hero__rota/, 'o cartão da rota continua no HTML');
   const lista = ROTA.map((nome) => CAPITAIS[nome].nome).join(' → ');

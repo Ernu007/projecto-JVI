@@ -8,10 +8,10 @@ import { PAGAMENTOS as PAGAMENTOS_SERVIDOR, PROVINCIAS as PROVINCIAS_SERVIDOR, v
 /* ---------------------------------------------------------------------------
    FASE 8 — o formulário (C1 a C6 do BRIEFING-FASE8-REVISAO.md).
 
-   O formulário vive num <template>; estes testes lêem-no do orcamento.html.
+   O formulário vive num <template>; estes testes lêem-no do index.html.
    --------------------------------------------------------------------------- */
 
-const HTML = fs.readFileSync('orcamento.html', 'utf8');
+const HTML = fs.readFileSync('index.html', 'utf8');
 const TPL = /<template id="tplOrc">([\s\S]*?)<\/template>/.exec(HTML)?.[1] ?? '';
 const CSS = fs.readFileSync('css/orcamento.css', 'utf8');
 const JS = fs.readFileSync('js/orcamento.js', 'utf8');

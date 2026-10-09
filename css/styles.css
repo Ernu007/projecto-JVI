@@ -236,6 +236,7 @@ ul { list-style: none; }
 /* O `main` tem `tabindex="-1"` para receber o foco do skip link. Sem isto
    não se vê um anel de foco à volta de todo o conteúdo. */
 main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
+.hero:focus, .secao-pagina:focus { outline: none; }
 
 .brand { display: flex; align-items: center; gap: 12px; flex: none; min-width: 44px; min-height: 44px; }
 .brand__logo { height: 46px; width: auto; transition: height var(--transicao); }
@@ -252,7 +253,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
   transition: color var(--transicao), background var(--transicao);
 }
 .nav a:hover { color: var(--verde); background: rgb(var(--verde-rgb) / .08); }
-.nav a[aria-current="page"] { color: var(--texto); box-shadow: inset 0 -2px 0 var(--verde-marca); border-radius: 0; }
+.nav a[aria-current] { color: var(--texto); box-shadow: inset 0 -2px 0 var(--verde-marca); border-radius: 0; }
 
 /* Menu mobile */
 .menu-btn {
@@ -283,7 +284,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
   transition: all var(--transicao);
 }
 .menu a:hover { color: var(--verde); background: rgb(var(--verde-rgb) / .08); border-color: var(--linha); }
-.menu a[aria-current="page"] { color: var(--texto); border-color: var(--verde-marca); }
+.menu a[aria-current] { color: var(--texto); border-color: var(--verde-marca); }
 .menu-fundo {
   position: fixed; inset: 0; z-index: 94; background: rgba(0, 0, 0, 0.72);
   opacity: 0; pointer-events: none; transition: opacity var(--transicao);
@@ -299,11 +300,15 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
   .brand__txt { display: block; }
 }
 
+/* Fase 10B: as cinco "páginas" são secções de uma só página. O cabeçalho é
+   fixo; sem esta margem o título de cada secção ficava por baixo dele. */
+.hero, .secao-pagina { scroll-margin-top: 64px; }
+
 /* =========================================================
-   TOPO DAS PÁGINAS INTERIORES
+   TOPO DAS SECÇÕES
    ========================================================= */
-.pagina-topo { padding: 112px 0 36px; background: var(--base); border-bottom: 1px solid var(--linha); }
-.pagina-topo h1 {
+.pagina-topo { padding: 40px 0 32px; background: var(--base); border-bottom: 1px solid var(--linha); }
+.pagina-topo h2 {
   font-size: clamp(30px, 5vw, 48px); line-height: 1.1;
   font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px;
 }
@@ -450,7 +455,7 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
    FORMULÁRIO DE ORÇAMENTO
    ------------------------------------------------------------
    Vive em css/orcamento.css, carregado depois deste ficheiro. Desde a
-   Fase 10 está na página orcamento.html, e já não num pop-up.
+   Fase 10B está na secção #orcamento de index.html, e já não num pop-up.
    ========================================================= */
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sobe { from { opacity: 0; transform: translateY(28px) scale(0.97); } to { opacity: 1; transform: none; } }
