@@ -1168,7 +1168,7 @@ Testes em `tests/aviao.test.js`.
 ### D62 — hero em duas colunas no telemóvel (10C.2)
 
 - Abaixo de 900 px o `.hero` é uma grelha de duas colunas (`0,9fr | 1fr`, 10 px de intervalo): título e linha ocupam as duas; por baixo, **botões à esquerda, mapa à direita**. `.hero__int` e `.hero__conteudo` passam a `display: contents`. Decisão: título e subtítulo na largura toda (a 360 px o título tem 2 linhas, a 320 px 3).
-- Canvas medidos no browser (largura × altura): 142×275 (320 px), 163×310 (360), 181×338 (393), 343×440 (768). Testes de etiquetas e do avião correm nestes tamanhos.
+- Canvas medidos no browser (largura × altura): 142×275 (320 px), 163×310 (360), 181×338 (393), 378×440 (768). Testes de etiquetas e do avião correm nestes tamanhos.
 - Botões: altura 54 px (≥ 44), texto parte em duas linhas, pílula, ícone à esquerda.
 - Mapa estreito (< 260 px de canvas): só os nomes das cidades, sem os das províncias em maiúsculas (sobrepunham-se e «CABO DELGADO» saía do canvas). Uma etiqueta nunca sai do canvas: se a posição preferida sair, tenta a seguinte.
 - Botões fixos (WhatsApp + telefone): a 360×640 tapavam o canto do mapa. Com o hero à vista (≥ 25 %) escondem-se (`.fixos--sobre-hero`, só < 900 px); o hero tem o seu WhatsApp. Voltam ao sair do hero. No computador ficam como estavam.
@@ -1178,3 +1178,11 @@ Testes em `tests/aviao.test.js`.
 - Pílula (`border-radius: 100px`), mesmo padding do `.btn` (16 px 28 px), pin vermelho `#EA4335` de 19 px à esquerda do texto, como os ícones dos outros dois. Fundo **branco** (o estilo secundário que já tinha; decisão: mantém a identidade do Maps e destaca-se do WhatsApp verde e do orçamento escuro sem ser maior), sem sombra.
 - Altura igual nos três: `.hero__acoes { grid-auto-rows: 1fr }` — as linhas têm a altura do mais alto. Medido no Chrome: 360 px → 54 / 54 / 54 px; 1440 px → 60 / 60 / 60 px. O WhatsApp já não é maior do que os outros no computador (era 61 contra 53).
 - O botão de Contactos não foi tocado (`.btn-maps` base, cartão com o pin em cima).
+
+### D64 — carrossel a 2 s por imagem (10C.4)
+
+`INTERVALO_MS` = 2000 para todas as imagens; a transição passou de 0,9 s / 1,4 s para 0,5 s (opacidade e transform), logo a imagem fica parada ~1,5 s de cada 2. Medido no Chrome (1440 px): mudanças aos 3101, 5107 e 7108 ms — passos de 2,0 s. Sem setas, pausa por gestos, reduced-motion e swipe como estavam.
+
+### D65 — verificação final da Fase 10C
+
+Chrome headless via DevTools (`.tmp/cdp.mjs`, `.tmp/v10c.mjs`), servidor estático na porta 8151, cache desligada, 360×640 (DPR 3), 360×740 (DPR 2), 393×800 (DPR 2,75), 320×640, 768×1024 e 1440×900, cada um com e sem `prefers-reduced-motion`. Sem erros de consola em nenhum; `scrollWidth` = largura do ecrã em todos; botões do hero com a mesma altura em todos (54 px a 360–393, 72 px a 320 porque «Como chegar à JVI» quebra em 3 linhas, 52 px a 768, 60 px a 1440). O mapa e os botões do hero ficam inteiros no primeiro ecrã a 360×640, 360×740 e 393×800 (mapa termina em y 615–617). Capturas vistas: `.tmp/10c-*.png`.

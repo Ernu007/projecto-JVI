@@ -65,7 +65,7 @@ export function iniciarGaleria(raiz, luz) {
 /* =========================================================
    Carrossel automático (Fase 10B, 10B.6)
    ------------------------------------------------------------
-   Uma fotografia de cada vez, a passar sozinha (~4 s) em ciclo contínuo:
+   Uma fotografia de cada vez, a passar sozinha (2 s) em ciclo contínuo:
    o índice dá a volta no fim. Sem setas e sem botão de pausa — o cliente
    não os quer; a acessibilidade (WCAG 2.2.2) cumpre-se por gestos:
 
@@ -80,7 +80,7 @@ export function iniciarGaleria(raiz, luz) {
    `transform`, sem layout. As fotografias não ativas ficam `inert`, para o
    teclado e os leitores de ecrã não passarem por cartões invisíveis.
    ========================================================= */
-export const INTERVALO_MS = 4000;
+export const INTERVALO_MS = 2000;
 const LIMITE_DESLIZE = 40; // px: abaixo disto é um toque, não um deslize
 
 export function iniciarCarrossel(raiz) {

@@ -6,7 +6,7 @@
 /* =========================================================
    GALERIA — carrossel automático (Fase 10B, 10B.6)
    ------------------------------------------------------------
-   Uma fotografia de cada vez, a passar sozinha (fade, ~4 s), em ciclo.
+   Uma fotografia de cada vez, a passar sozinha (fade, 2 s por imagem), em ciclo.
    Sem setas e sem botão de pausa: o cliente não os quer. A pausa é por
    gestos (rato, toque, foco, fora do ecrã, separador oculto) — ver
    `iniciarCarrossel` em js/galeria.js e a decisão D58.
@@ -31,7 +31,7 @@
   position: absolute; inset: 0; display: block; width: 100%; padding: 0; overflow: hidden;
   border: 0; background: transparent; cursor: zoom-in;
   opacity: 0; transform: scale(1.04); pointer-events: none;
-  transition: opacity 0.9s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.5s ease, transform 0.5s ease-out; /* Fase 10C: curta, para a imagem ficar parada quase os 2 s */
 }
 .gal__item[data-estado="ativo"] { opacity: 1; transform: none; pointer-events: auto; z-index: 1; }
 

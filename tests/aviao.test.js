@@ -11,7 +11,7 @@ import {
    o DPR, ou se o avião estático (movimento reduzido) voltar a esconder-se em
    cima da etiqueta de Maputo. */
 
-const CANVAS = [[142, 275], [163, 310], [181, 338], [343, 440], [360, 420], [390, 844], [768, 900], [1440, 900]];
+const CANVAS = [[142, 275], [163, 310], [181, 338], [378, 440], [360, 420], [390, 844], [768, 900], [1440, 900]];
 const cruzam = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 test('10C.1: abaixo de 760 px o avião tem pelo menos o tamanho mínimo e cresce com o mapa', () => {

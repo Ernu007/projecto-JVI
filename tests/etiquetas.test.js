@@ -9,8 +9,8 @@ import { CAPITAIS, ROTA, BBOX } from '../js/mapa-dados.js';
    o canvas de mapa do telemóvel (360x420) e 1440x900 (computador). */
 const TAMANHOS = [[320, 700], [360, 800], [360, 420], [390, 844], [768, 900], [1440, 900]];
 /* Fase 10C: no telemóvel o mapa é a coluna da direita do hero (≈ 46 % da
-   largura): 320, 360, 393 px de ecrã e o tablet. Medidos no browser. */
-const COLUNA = [[142, 275], [163, 310], [181, 338], [343, 440]];
+   largura): 320, 360, 393 px de ecrã e 768 (tablet). Medidos no browser. */
+const COLUNA = [[142, 275], [163, 310], [181, 338], [378, 440]];
 TAMANHOS.push(...COLUNA);
 
 const cruzam = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;

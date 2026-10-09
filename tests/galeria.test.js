@@ -8,7 +8,7 @@ import { SITE, seccao } from './paginas.js';
 
    O cliente achou que caixas soltas empilhadas mostram pouco profissionalismo.
    Ficam as fotografias de carga embalada e individual. O carrossel passa
-   sozinho (~4 s), sem setas nem botão de pausa; a pausa é por gestos.
+   sozinho (2 s), sem setas nem botão de pausa; a pausa é por gestos.
    --------------------------------------------------------------------------- */
 
 const GAL = seccao('sobre');
@@ -159,10 +159,10 @@ async function arrancar(opcoes) {
 }
 const fim = () => mock.timers.reset();
 
-test('10B.6: passa sozinho de ~4 s em ~4 s, em ciclo, e só uma fotografia fica activa e focável', async () => {
+test('10B.6: passa sozinho de 2 s em 2 s, em ciclo, e só uma fotografia fica activa e focável', async () => {
   const c = await arrancar();
   try {
-    assert.equal(c.INTERVALO_MS, 4000);
+    assert.equal(c.INTERVALO_MS, 2000);
     assert.equal(c.activo(), 0);
     for (let k = 1; k <= 7; k += 1) {
       mock.timers.tick(c.INTERVALO_MS);
@@ -288,4 +288,15 @@ test('10B.7: o camião de banco saiu; o de Serviços é o gerado, com crédito e
   assert.match(s, /<!-- Fotografia: Unsplash[^>]*EmEQ6kK_5P0/);
   assert.ok(fs.statSync('assets/img/camiao-jvi.webp').size <= 200 * 1024);
   assert.ok(fs.existsSync('tools/gerar-camiao.py'));
+});
+
+test('10C.4: a transição do carrossel dura no máximo 0,6 s (a imagem fica parada a maior parte dos 2 s)', async () => {
+  const fs = await import('node:fs');
+  const css = fs.readFileSync('css/galeria.css', 'utf8');
+  const regra = /\.gal__item\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  const duracoes = [...(/transition:([^;]*);/.exec(regra)?.[1] ?? '').matchAll(/(\d*\.?\d+)s\b/g)].map((m) => Number(m[1]));
+  assert.ok(duracoes.length >= 2, 'a transição do item não tem durações legíveis');
+  for (const d of duracoes) assert.ok(d <= 0.6, `transição de ${d} s`);
+  const { INTERVALO_MS } = await import('../js/galeria.js');
+  assert.equal(INTERVALO_MS, 2000);
 });
