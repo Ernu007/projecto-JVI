@@ -162,7 +162,7 @@ function cruzam(a, b) {
 /** O texto da etiqueta de Maputo, a sede da JVI. Só no mapa. */
 export const ROTULO_SEDE = 'Maputo — Sede';
 
-export function etiquetasDoMapa(w, h) {
+export function etiquetasDoMapa(w, h, reservas = []) {
   const { esc, ox, oy } = geometriaDoMapa(w, h);
   const pequeno = w < ECRA_PEQUENO;
   const tamCidade = pequeno ? 8 : 9;
@@ -172,6 +172,8 @@ export function etiquetasDoMapa(w, h) {
   const raio = raioAgencia(1);
   const ocupado = [];
   const resultado = [];
+  /* Fase 10C: caixas já ocupadas (o avião estático) — as etiquetas cedem. */
+  for (const r of reservas) ocupado.push({ ...r, tipo: 'reserva' });
 
   // os pontos de agência (com o anel) ocupam espaço e contam como obstáculo
   for (const nome of ROTA) {
@@ -226,7 +228,62 @@ export function etiquetasDoMapa(w, h) {
     if (!c || c.nome.toLowerCase() === nome.toLowerCase()) continue;
     colocar('provincia', nome, nome.toUpperCase(), tamProv, true, c, [acima, maisAcima, maisAbaixo, ...todas]);
   }
-  return resultado.filter((e) => e.tipo !== 'ponto');
+  return resultado.filter((e) => e.tipo !== 'ponto' && e.tipo !== 'reserva');
+}
+
+/* ------------------------------------------------------------
+   Fase 10C (10C.1). O avião tem de se ver no telemóvel real.
+
+   - TAMANHO: era 15 px abaixo de 900 — pequeno num ecrã de 360. Passa a ser
+     proporcional à largura do canvas (10 %), entre 16 e 24 px; o 24 é o do
+     computador, por isso nunca é maior do que lá.
+   - DPR: o canvas tem `largura x DPR` píxeis de lado; num Android a 3x isso
+     era 9 vezes a área. Fica limitado a 2.
+   - SEM ANIMAÇÃO: o avião estático ficava parado à saída de Maputo, em cima
+     de «Maputo — Sede». Fica agora a meio do percurso entre Beira e Tete
+     (no salto Chimoio → Tete). Sítio fixo: são as etiquetas que lhe cedem
+     o lugar (`etiquetasDoMapa(w, h, [caixa])`). `aviaoParado` é pura: o
+     teste corre-a.
+   ------------------------------------------------------------ */
+export const AVIAO_MIN = 16;
+export const AVIAO_MAX = 24;
+export const DPR_MAX = 2;
+
+export function tamanhoDoAviao(w) {
+  if (w >= 900) return AVIAO_MAX;
+  return Math.min(AVIAO_MAX, Math.max(AVIAO_MIN, Math.round(w * 0.1)));
+}
+
+export function dprDoCanvas(dpr) {
+  return Math.min(dpr || 1, DPR_MAX);
+}
+
+/** A caixa que o avião ocupa (com a sombra e as asas), centrada em x, y. */
+export function caixaDoAviao(x, y, tam) {
+  const r = tam * 1.5;
+  return { x0: x - r, y0: y - r, x1: x + r, y1: y + r };
+}
+
+/** Onde (e para onde aponta) o avião fica quando não há animação. */
+export function aviaoParado(w, h) {
+  const { esc, ox, oy } = geometriaDoMapa(w, h);
+  const tam = tamanhoDoAviao(w);
+  const P = (nome) => ({
+    x: ox + (CAPITAIS[nome].x - BBOX[0]) * esc,
+    y: oy + (CAPITAIS[nome].y - BBOX[1]) * esc,
+  });
+  const a = P('Manica');
+  const b = P('Tete');
+  const cx = (a.x + b.x) / 2 + (b.y - a.y) * CURVA;
+  const cy = (a.y + b.y) / 2 - (b.x - a.x) * CURVA;
+  const em = (t) => {
+    const m = 1 - t;
+    return { x: m * m * a.x + 2 * m * t * cx + t * t * b.x, y: m * m * a.y + 2 * m * t * cy + t * t * b.y };
+  };
+  const escolhido = 0.5;
+  const p = em(escolhido);
+  const q = em(Math.min(1, escolhido + 0.04));
+  return { x: p.x, y: p.y, ang: Math.atan2(q.y - p.y, q.x - p.x), tam };
 }
 
 export function iniciarVoo(canvas, opcoes = {}) {
@@ -259,7 +316,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
      (`geometriaDoMapa`, mais acima). */
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = dprDoCanvas(window.devicePixelRatio);
     w = canvas.clientWidth;
     h = canvas.clientHeight;
     if (!w || !h) return;
@@ -271,7 +328,12 @@ export function iniciarVoo(canvas, opcoes = {}) {
        (Fase 9, 9.8): o país enche-a, em vez de ficar pequeno dentro das
        margens que fazia sentido deixar quando estava por trás do texto. */
     ({ esc, ox, oy } = geometriaDoMapa(w, h));
-    rotulos = etiquetasDoMapa(w, h);
+    if (reduzir) {
+      const a = aviaoParado(w, h);
+      rotulos = etiquetasDoMapa(w, h, [caixaDoAviao(a.x, a.y, a.tam)]);
+    } else {
+      rotulos = etiquetasDoMapa(w, h);
+    }
   }
 
   /* As coordenadas vêm projectadas (lon·cos, −lat) de `mapa-dados.js`.
@@ -802,7 +864,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
       const d0 = em(salto, Math.max(0, dentro - 0.02));
       const d1 = em(salto, Math.min(1, dentro + 0.02));
       const tangente = Math.atan2(d1.y - d0.y, d1.x - d0.x);
-      const tam = (w < 900 ? 15 : 24);
+      const tam = tamanhoDoAviao(w);
       desenharRastro(idx, estado.sentido);
       desenharAviao(p.x, p.y, rumoDoAviao(tangente, estado), tam);
     }
@@ -847,17 +909,12 @@ export function iniciarVoo(canvas, opcoes = {}) {
       desenharAgencias();
       desenharSetas(chegada);
       desenharRota(chegada);
-      /* O avião também aparece sem animação: parado à saída de Maputo, a
-         apontar para o primeiro destino. Quem tem "reduzir movimento" ligado
-         (no Android é "remover animações") ficava com o mapa e sem avião:
-         é uma das duas causas de o avião "não aparecer no telemóvel"
-         (Fase 10, 10.6; a outra era o mapa estar fora do primeiro ecrã). */
-      const primeiro = saltos[0];
-      if (primeiro) {
-        const de = em(primeiro, 0.1);
-        const para = em(primeiro, 0.14);
-        desenharAviao(de.x, de.y, Math.atan2(para.y - de.y, para.x - de.x), w < 900 ? 15 : 24);
-      }
+      /* O avião também aparece sem animação: quem tem "reduzir movimento"
+         ligado (no Android é "remover animações") ficava com o mapa e sem
+         avião, ou com ele escondido em cima de «Maputo — Sede». Fica parado
+         a meio do percurso, num sítio livre (`aviaoParado`). */
+      const parado = aviaoParado(w, h);
+      desenharAviao(parado.x, parado.y, parado.ang, parado.tam);
       aoProgredir(1);
     };
     requestAnimationFrame(estatico);
@@ -885,7 +942,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
       } else if (!dentro) {
         visivel = false;
       }
-    }, { threshold: 0.2 }).observe(canvas);
+    }, { threshold: 0.05 }).observe(canvas);
   } else {
     visivel = true;
     requestAnimationFrame(frame);

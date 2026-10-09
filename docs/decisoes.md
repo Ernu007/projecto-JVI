@@ -1147,3 +1147,20 @@ computador a 768 e 1440 px. Uma página, `index.html`.
 - A única `<img>` «partida» da página é o `src=""` da luzbox (fechada); é anterior à 10B e inofensivo.
 
 Fica por verificar: o **deslize com o dedo** e o **toque a segurar** só estão testados com eventos simulados nos testes unitários, não em dispositivo real; Safari/iOS e Firefox reais (só Chrome); a pausa por foco do teclado e as setas ← → foram testadas por simulação, não com Tab num browser; e o carrossel em ecrãs tácteis com `touch-action: pan-y` (o scroll vertical deve manter-se, mas não foi sentido na mão).
+
+### D61 — o avião no telemóvel (10C.1)
+
+Causa real no telemóvel do cliente: **não reproduzida** na emulação do Chrome
+(o avião voava a 360×800). Hipóteses eliminadas ou corrigidas, uma a uma:
+
+| Hipótese | Resultado |
+|---|---|
+| Mapa abaixo da dobra e o voo só arranca com o `IntersectionObserver` | Corrigido em parte pelo 10C.2 (mapa no primeiro ecrã); o limiar baixou de 0,2 para 0,05, para arrancar logo que apareça uma nnesga do mapa. |
+| `prefers-reduced-motion` («Remover animações» do Android): avião parado à saída de Maputo, a tapar «Maputo — Sede» | **Provável causa.** O avião estático fica agora a meio do percurso entre Beira e Tete (salto Chimoio → Tete, t = 0,5, `aviaoParado`) e as etiquetas cedem-lhe o lugar (`etiquetasDoMapa(w, h, reservas)`). |
+| Avião de 15 px fixos | Passou a 10 % da largura do canvas, entre 16 e 24 px (`tamanhoDoAviao`). O 24 é o do computador. |
+| DPR 2,75/3 → canvas enorme | O limite a 2 já existia; ficou numa função (`dprDoCanvas`, `DPR_MAX`) e num teste. |
+| Excepção JS | Nenhuma na consola a 360×640 DPR 3, com e sem movimento reduzido (ver D63). |
+| Arranque dependente de scroll | Com o mapa no primeiro ecrã arranca sozinho (ver D63 para o tempo medido). |
+
+Caixa do avião para as etiquetas: ±1,5 × o tamanho (corpo, asas e sombra).
+Testes em `tests/aviao.test.js`.
