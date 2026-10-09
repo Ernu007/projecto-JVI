@@ -239,7 +239,7 @@ test('a folha de calculo regista o telefone do cliente, na ordem das colunas', (
   assert.deepEqual(CAMPOS.map(([k]) => k), [
     'nome', 'apelido', 'provincia', 'morada', 'telefone', 'destinatario',
     'provinciaDestino', 'peso', 'dimensao', 'descricao', 'pagamento',
-    'pagarNoLevantamento', 'preco_total',
+    'pagarNoLevantamento', 'preco_total', 'codigo',
   ]);
   const telefone = CAMPOS.find(([k]) => k === 'telefone');
   assert.equal(telefone[1], 'Telefone do cliente');

@@ -86,7 +86,7 @@ export const LIMITES = {
   nome: 80, apelido: 80, provincia: 40, morada: 200, telefone: 40,
   destinatario: 120, provinciaDestino: 40, peso: 14, dimensao: 60,
   descricao: 1200, pagamento: 40, pagarNoLevantamento: 6, preco_total: 16,
-  origem: 20, website: 200,
+  origem: 20, website: 200, codigo: 40,
 };
 
 /* Conjuntos de caracteres em vez de "qualquer coisa menos o sinal": assim um
@@ -119,6 +119,16 @@ export const CAMPOS = [
   ['pagamento', 'Forma de pagamento'],
   ['pagarNoLevantamento', 'Paga no levantamento'],
   ['preco_total', 'Total calculado (MZN)'],
+  /* No FIM da lista, nunca no meio: a folha de cálculo já existe com
+     colunas criadas na ordem acima, e `gravarSheet` escreve por posição,
+     não por nome de cabeçalho. Acrescentar aqui só obriga a abrir mais
+     uma coluna no fim da folha ("Código de referência (site)"); inserir
+     a meio desalinhava todas as colunas seguintes das linhas já gravadas.
+     Este é o código único por pedido (ver `gerarCodigoRef` em
+     `js/orcamento.js`) — é a ligação entre "veio do site" e "a JVI
+     recebeu/cobrou X", que é o que o contrato de parceria usa para
+     calcular a comissão de 10%. */
+  ['codigo', 'Código de referência (site)'],
 ];
 
 export const PAGAMENTOS = ['Numerário', 'e-Mola', 'M-Pesa', 'Transferência bancária'];

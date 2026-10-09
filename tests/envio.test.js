@@ -47,12 +47,12 @@ test('dados le o formulario para um objecto simples e aparado', () => {
     },
     { pagamento: 'M-Pesa', pagarNoLevantamento: 'nao' }
   );
-  assert.deepEqual(dados(form), {
+  assert.deepEqual({ ...dados(form), codigo: undefined }, {
     nome: 'João Pedro', apelido: 'Sissu', provincia: 'Nampula',
     morada: 'Sommachine', telefone: '87 806 6265',
     destinatario: 'Ana Maria', provinciaDestino: 'Cabo Delgado',
     peso: '11.7', dimensao: '60 x 40 x 40', descricao: 'tintas PLASCON',
-    pagamento: 'M-Pesa', pagarNoLevantamento: 'nao',
+    pagamento: 'M-Pesa', pagarNoLevantamento: 'nao', codigo: undefined,
   });
 });
 

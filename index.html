@@ -802,6 +802,40 @@
 }
 </script>
 
+<!-- FAQPage: rich snippet para as perguntas frequentes da secção #faq.
+     Fica DEPOIS do Organization de propósito — os testes (fase8c,
+     numero, rota) extraem o PRIMEIRO <script type="application/ld+json">
+     da página à espera de o Organization; invertido, "quebravam" às
+     escuras sem o schema mudar de sentido nenhum. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Quanto tempo demora a chegar uma encomenda ou carga em Moçambique?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Entre 24 e 72 horas úteis dentro do país, por via aérea. Por estrada, consoante a rota. A JVI Carga & Serviços confirma o prazo exacto ao fechar o orçamento." }
+    },
+    {
+      "@type": "Question",
+      "name": "Como posso pagar o envio de carga pela JVI?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Em numerário, por dinheiro móvel (e-Mola ou M-Pesa) ou por transferência bancária. Pode pagar no acto de envio ou no levantamento, na província de destino." }
+    },
+    {
+      "@type": "Question",
+      "name": "A JVI Carga & Serviços envia carga para fora de Moçambique?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Sim. A JVI envia para qualquer país através da sua rede de parceiros aéreos e rodoviários." }
+    },
+    {
+      "@type": "Question",
+      "name": "Que documentos preciso de entregar para enviar uma encomenda?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Para mercadoria nacional, a factura ou a declaração de valor. Para carga internacional, a documentação comercial e, quando aplicável, a licença de importação." }
+    }
+  ]
+}
+</script>
+
 <script src="js/main.js" type="module"></script>
 </body>
 </html>

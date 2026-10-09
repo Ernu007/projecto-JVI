@@ -87,7 +87,7 @@ export function msgEmpresa(d) {
   return [
     '*NOVO PEDIDO DE ORÇAMENTO — JVI Carga & Serviços*',
     '',
-    `*Ref.:* JVI/${refInterno()}`,
+    `*Código de referência:* ${num(d.codigo)}`,
     '',
     '*EMISSOR*',
     `• Nome: ${num(d.nome)} ${num(d.apelido)}`.replace('— —', '').trim(),
@@ -126,6 +126,11 @@ export function msgCliente(d) {
     `• Carga: ${num(d.descricao)} — ${num(d.peso)} kg`,
     `• Destino: ${num(d.provinciaDestino)}`,
     '',
+    /* Código de referência: é a prova de que este pedido nasceu no site.
+       O cliente guarda-o e, se a JVI alguma vez perguntar "donde veio o
+       contacto", é este número que identifica o pedido sem ambiguidade. */
+    `Código de referência do seu pedido: *${num(d.codigo)}*`,
+    '',
     p
       ? `*TOTAL: ${formatarMT(p.total)}* (base ${formatarMT(p.base)} + IVA ${formatarMT(p.iva)})`
       : 'O total é confirmado pela nossa equipa.',
@@ -145,6 +150,7 @@ export function msgCliente(d) {
 export function linhasResumo(d) {
   const p = calcularPreco(d.peso);
   return [
+    { rotulo: 'Código de referência', valor: num(d.codigo) },
     { rotulo: 'Emissor', valor: `${num(d.nome)} ${num(d.apelido)}`.replace('— —', '').trim() },
     { rotulo: 'Origem', valor: num(d.provincia) },
     { rotulo: 'Morada', valor: num(d.morada) },
@@ -176,6 +182,11 @@ export function dados(form) {
     peso: g('peso'), dimensao: g('dimensao'), descricao: g('descricao'),
     pagamento: form.querySelector('input[name="pagamento"]:checked')?.value || PAGAMENTOS[0],
     pagarNoLevantamento: form.querySelector('input[name="pagarNoLevantamento"]:checked')?.value || 'sim',
+    /* Um código por pedido, gerado uma única vez aqui (dados() só corre
+       uma vez por submissão, no 'orc:pronto'). Viaja depois sem mudar
+       pelas duas mensagens de WhatsApp, pelo e-mail e pela folha de
+       cálculo — é a chave que liga "veio do site" a "a JVI recebeu x". */
+    codigo: gerarCodigoRef(),
   };
 }
 
@@ -220,10 +231,20 @@ export function planoEnvio(d) {
   };
 }
 
-function refInterno() {
+/* ---------- Código de referência (rastreio de comissão) ----------
+   Formato: JVI-AAAAMMDD-HHMM-XXX. Os 14 primeiros caracteres bastariam
+   para ordenar por data, mas dois pedidos no mesmo minuto colidiam; os
+   3 caracteres finais (base-36, maiúsculas) tornam a colisão desprezável
+   sem precisar de um contador partilhado entre visitantes.
+   Exportado para a JVI poder confirmar manualmente, na folha de
+   cálculo partilhada, qual código corresponde a qual pagamento — é
+   assim que o parceiro do site sabe quantos clientes pagantes vieram
+   de lá. Ver `docs/decisoes.md` e o contrato de parceria. */
+export function gerarCodigoRef() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  const sufixo = Math.random().toString(36).slice(2, 5).toUpperCase();
+  return `JVI-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}-${sufixo}`;
 }
 
 /* =========================================================
