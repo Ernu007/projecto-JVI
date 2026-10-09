@@ -112,6 +112,119 @@ export function passoDoRelogio(ultimo, agora) {
   return Math.max(0, Math.min(PASSO_MAX, agora - ultimo));
 }
 
+/* ------------------------------------------------------------
+   Fase 10 (10.7) — geometria do mapa e etiquetas sem sobreposição.
+
+   A 360 px o país mede ~320 px e Manica/Sofala (Chimoio/Beira) ficam a
+   1,2 unidades uma da outra: "MANICA" caía em cima de "SOFALA" e "Chimoio"
+   em cima de "Beira". `geometriaDoMapa` é a conta de `resize` tirada para
+   fora, e `etiquetasDoMapa` decide ONDE vai cada nome. Ambas puras: o
+   desenho lê delas e `tests/etiquetas.test.js` corre-as sem canvas.
+
+   Regras: (1) o nome da província não se escreve quando a cidade tem o
+   mesmo nome (Nampula, Tete, Inhambane, Maputo) — a cidade já o diz;
+   (2) cada etiqueta tenta posições por ordem (em baixo, em cima, à
+   esquerda, à direita, e os cantos) e fica na primeira que não toca em
+   nenhuma já colocada nem em nenhum ponto de agência; (3) abaixo de
+   `ECRA_PEQUENO` os tamanhos descem um ponto. A largura é estimada, não
+   medida, para o teste e o desenho concordarem sem um canvas.
+   ------------------------------------------------------------ */
+const ECRA_PEQUENO = 760;
+const FRAÇÃO_LARGURA_MAPA = 0.52;
+
+export function geometriaDoMapa(w, h) {
+  const larg = BBOX[2] - BBOX[0];
+  const alt = BBOX[3] - BBOX[1];
+  const areaW = w < 900 ? w * 0.88 : w * FRAÇÃO_LARGURA_MAPA;
+  const areaH = w < 900 ? h * 0.94 : h * 0.82;
+  const esc = Math.min(areaW / larg, areaH / alt);
+  return {
+    esc,
+    ox: (w < 900 ? w * 0.5 : w * 0.66) - (larg * esc) / 2,
+    oy: h * 0.5 - (alt * esc) / 2,
+  };
+}
+
+export function raioAgencia(luz) {
+  return 2.6 + 1.6 * luz;
+}
+
+/** Largura estimada de um texto em canvas (conservadora: arredonda para cima). */
+export function larguraEstimada(texto, tamanho, maiusculas) {
+  return Math.ceil(texto.length * tamanho * (maiusculas ? 0.74 : 0.6)) + 2;
+}
+
+function cruzam(a, b) {
+  return a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+}
+
+/** Caixas e posições das etiquetas do mapa para um canvas `w` x `h`. */
+export function etiquetasDoMapa(w, h) {
+  const { esc, ox, oy } = geometriaDoMapa(w, h);
+  const pequeno = w < ECRA_PEQUENO;
+  const tamCidade = pequeno ? 8 : 9;
+  const tamProv = pequeno ? 9 : 10;
+  const px = (c) => ox + (c.x - BBOX[0]) * esc;
+  const py = (c) => oy + (c.y - BBOX[1]) * esc;
+  const raio = raioAgencia(1);
+  const ocupado = [];
+  const resultado = [];
+
+  // os pontos de agência (com o anel) ocupam espaço e contam como obstáculo
+  for (const nome of ROTA) {
+    const c = CAPITAIS[nome];
+    if (!c) continue;
+    const r = raio + 2.4 + 1;
+    ocupado.push({ x0: px(c) - r, y0: py(c) - r, x1: px(c) + r, y1: py(c) + r, tipo: 'ponto', nome });
+  }
+
+  function colocar(tipo, nome, texto, tam, maiusculas, c, candidatos) {
+    const lw = larguraEstimada(texto, tam, maiusculas);
+    const lh = tam + 2;
+    const x = px(c);
+    const y = py(c);
+    const r = raio + 2.4 + 1;
+    let escolhida = null;
+    for (const cand of candidatos) {
+      const ax = cand.alinha === 'left' ? x + r + 1 : cand.alinha === 'right' ? x - r - 1 : x;
+      const ay = y + cand.dy(r, lh);
+      const x0 = cand.alinha === 'left' ? ax : cand.alinha === 'right' ? ax - lw : ax - lw / 2;
+      const caixa = { x0, y0: ay - lh / 2, x1: x0 + lw, y1: ay + lh / 2, tipo, nome, texto, x: ax, y: ay, alinha: cand.alinha };
+      if (!ocupado.some((o) => cruzam(caixa, o))) { escolhida = caixa; break; }
+    }
+    if (!escolhida) return null;
+    ocupado.push(escolhida);
+    resultado.push(escolhida);
+    return escolhida;
+  }
+
+  const abaixo = { alinha: 'center', dy: (r, lh) => r + lh / 2 };
+  const acima = { alinha: 'center', dy: (r, lh) => -(r + lh / 2) };
+  const esquerda = { alinha: 'right', dy: () => 0 };
+  const direita = { alinha: 'left', dy: () => 0 };
+  const abaixoDir = { alinha: 'left', dy: (r, lh) => r };
+  const abaixoEsq = { alinha: 'right', dy: (r, lh) => r };
+  const acimaDir = { alinha: 'left', dy: (r, lh) => -r };
+  const acimaEsq = { alinha: 'right', dy: (r, lh) => -r };
+  const maisAcima = { alinha: 'center', dy: (r, lh) => -(r + lh * 1.5) };
+  const maisAbaixo = { alinha: 'center', dy: (r, lh) => r + lh * 1.5 };
+  const todas = [abaixo, esquerda, direita, abaixoDir, abaixoEsq, acima, acimaDir, acimaEsq, maisAbaixo, maisAcima];
+
+  // 1.º as cidades (o que importa a quem quer saber para onde ir)
+  for (const nome of ROTA) {
+    const c = CAPITAIS[nome];
+    if (!c) continue;
+    colocar('cidade', nome, c.nome, tamCidade, false, c, todas);
+  }
+  // 2.º os nomes das províncias, só quando dizem algo que a cidade não diz
+  for (const nome of ROTA) {
+    const c = CAPITAIS[nome];
+    if (!c || c.nome.toLowerCase() === nome.toLowerCase()) continue;
+    colocar('provincia', nome, nome.toUpperCase(), tamProv, true, c, [acima, maisAcima, maisAbaixo, ...todas]);
+  }
+  return resultado.filter((e) => e.tipo !== 'ponto');
+}
+
 export function iniciarVoo(canvas, opcoes = {}) {
   const aoProgredir = opcoes.aoProgredir || (() => {});
   const ctxEcra = canvas.getContext('2d', { alpha: true });
@@ -124,6 +237,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
 
   let w = 0, h = 0, dpr = 1;
   let esc = 1, ox = 0, oy = 0;
+  let rotulos = [];           // etiquetas do mapa, já sem sobreposição (`etiquetasDoMapa`)
   let pontos = [];            // trajectório em coordenadas de ecrã
   let saltos = [];            // {de, para, x0, y0, x1, y1, cx, cy, t0, t1}
   let mapa = {};              // provincia -> factor de iluminação 0..1
@@ -137,8 +251,8 @@ export function iniciarVoo(canvas, opcoes = {}) {
   const larg = BBOX[2] - BBOX[0];
   const alt = BBOX[3] - BBOX[1];
 
-  /* O país ocupa a metade direita do hero; o texto fica à esquerda. */
-  const FRAÇÃO_LARGURA = 0.52;
+  /* O país ocupa a metade direita do hero; o texto fica à esquerda
+     (`geometriaDoMapa`, mais acima). */
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -152,12 +266,8 @@ export function iniciarVoo(canvas, opcoes = {}) {
     /* No telemóvel o canvas é uma caixa só do mapa, por baixo do conteúdo
        (Fase 9, 9.8): o país enche-a, em vez de ficar pequeno dentro das
        margens que fazia sentido deixar quando estava por trás do texto. */
-    const areaW = w < 900 ? w * 0.88 : w * FRAÇÃO_LARGURA;
-    const areaH = w < 900 ? h * 0.94 : h * 0.82;
-    esc = Math.min(areaW / larg, areaH / alt);
-    // ox/oy sao o canto superior esquerdo do pais no ecra, para ficar centrado
-    ox = (w < 900 ? w * 0.5 : w * 0.66) - (larg * esc) / 2;
-    oy = h * 0.5 - (alt * esc) / 2;
+    ({ esc, ox, oy } = geometriaDoMapa(w, h));
+    rotulos = etiquetasDoMapa(w, h);
   }
 
   /* As coordenadas vêm projectadas (lon·cos, −lat) de `mapa-dados.js`.
@@ -299,14 +409,15 @@ export function iniciarVoo(canvas, opcoes = {}) {
         ctx.lineWidth = 0.6 + 1.1 * luz;
         ctx.stroke();
       }
-      // nome da província acende quando iluminada
-      if (luz > 0.02) {
-        const c = CAPITAIS[nome];
+      // nome da província acende quando iluminada (se tiver sítio: ver `etiquetasDoMapa`)
+      const rot = luz > 0.02 && rotulos.find((e) => e.tipo === 'provincia' && e.nome === nome);
+      if (rot) {
         ctx.save();
-        ctx.font = '700 10px "Plus Jakarta Sans", sans-serif';
+        ctx.font = `700 ${w < ECRA_PEQUENO ? 9 : 10}px "Plus Jakarta Sans", sans-serif`;
         ctx.fillStyle = `rgba(203,213,225,${0.35 + 0.6 * luz})`;
-        ctx.textAlign = 'center';
-        ctx.fillText(nome.toUpperCase(), X(c.x), Y(c.y) - 9);
+        ctx.textAlign = rot.alinha;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(rot.texto, rot.x, rot.y);
         ctx.restore();
       }
     }
@@ -449,7 +560,7 @@ export function iniciarVoo(canvas, opcoes = {}) {
       const x = X(a.x);
       const y = Y(a.y);
       const luz = Math.min(1, (mapa[nome] || 0) + 0.3);
-      const raio = 2.6 + 1.6 * luz;
+      const raio = raioAgencia(luz);
 
       ctx.globalAlpha = 0.35 + 0.55 * luz;
       ctx.fillStyle = `rgb(${VERDE.join(',')})`;
@@ -464,16 +575,18 @@ export function iniciarVoo(canvas, opcoes = {}) {
       ctx.arc(x, y, raio + 2.4, 0, Math.PI * 2);
       ctx.stroke();
 
-      ctx.font = '600 9px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
+      const rot = rotulos.find((e) => e.tipo === 'cidade' && e.nome === nome);
+      if (!rot) continue;
+      ctx.font = `600 ${w < ECRA_PEQUENO ? 8 : 9}px "Plus Jakarta Sans", sans-serif`;
+      ctx.textAlign = rot.alinha;
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#0B0B0C';
       ctx.lineJoin = 'round';
       ctx.globalAlpha = 0.85;
-      ctx.strokeText(a.nome, x, y + raio + 9);
+      ctx.strokeText(rot.texto, rot.x, rot.y);
       ctx.fillStyle = `rgba(232,237,245,${0.55 + 0.45 * luz})`;
-      ctx.fillText(a.nome, x, y + raio + 9);
+      ctx.fillText(rot.texto, rot.x, rot.y);
     }
     ctx.restore();
   }

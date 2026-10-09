@@ -245,8 +245,8 @@ test('9.3: o hero não tem o cartão com a lista de nomes — o mapa já os escr
   /* E quem escreve os nomes é o canvas: a província e a cidade de cada
      agência, em `js/hero-voo.js`. */
   const fonte = codigoDe('js/hero-voo.js');
-  assert.match(fonte, /ctx\.fillText\(nome\.toUpperCase\(\)/, 'o mapa do hero deixou de escrever as províncias');
-  assert.match(fonte, /ctx\.fillText\(a\.nome,/, 'o mapa do hero deixou de escrever as cidades');
+  assert.match(fonte, /e\.tipo === 'provincia'[\s\S]*?ctx\.fillText\(rot\.texto/, 'o mapa do hero deixou de escrever as províncias');
+  assert.match(fonte, /e\.tipo === 'cidade'[\s\S]*?ctx\.fillText\(rot\.texto/, 'o mapa do hero deixou de escrever as cidades');
 
   /* Sem cartão não sobra CSS dele, nem a reserva de espaço que ele pedia. */
   const css = fs.readFileSync('css/styles.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
