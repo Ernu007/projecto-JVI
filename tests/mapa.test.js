@@ -246,7 +246,7 @@ test('9.3: o hero não tem o cartão com a lista de nomes — o mapa já os escr
      agência, em `js/hero-voo.js`. */
   const fonte = codigoDe('js/hero-voo.js');
   assert.match(fonte, /ctx\.fillText\(nome\.toUpperCase\(\)/, 'o mapa do hero deixou de escrever as províncias');
-  assert.match(fonte, /ctx\.fillText\(a\.nome,/, 'o mapa do hero deixou de escrever as cidades');
+  assert.match(fonte, /ctx\.fillText\(rotulo,/, 'o mapa do hero deixou de escrever as cidades');
 
   /* Sem cartão não sobra CSS dele, nem a reserva de espaço que ele pedia. */
   const css = fs.readFileSync('css/styles.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
@@ -321,7 +321,7 @@ test('o voo tem uma seta por salto — uma por par de províncias vizinhas', asy
 });
 
 test('cada agência da JVI é um ponto na província certa, e há uma por rota', () => {
-  const fonte = codigoDe('js/main.js');
+  const fonte = codigoDe('js/hero-voo.js');
   assert.match(fonte, /for \(const nome of ROTA\) \{\s*const a = agencyPoint\(nome\)/,
     'o mapa de cobertura não pinta a agência de cada província da rota');
   for (const nome of ROTA) {
@@ -362,13 +362,6 @@ test('os dois canvas preenchem TODOS os anéis, não só o primeiro', () => {
   }
 });
 
-test('o mapa de cobertura desenha o contorno do país', () => {
-  const fonte = codigoDe('js/main.js');
-  assert.match(fonte, /desenharFronteira\(\)/,
-    'a secção de Cobertura nunca desenhou o contorno de Moçambique');
-  assert.match(fonte, /import \{[^}]*\bPAIS\b[^}]*\} from '\.\/mapa-dados\.js'/,
-    'o mapa de cobertura não importa o PAIS');
-});
 /* ---------- Fase 9 (9.2): o voo é de ida e volta, em loop infinito ---------- */
 
 /* O cliente: "ao chegar a Cabo Delgado, ele contorna e volta fazendo o mesmo
@@ -590,6 +583,7 @@ function correrVoo({ largura = 1280, altura = 800, ate, passo = 100 }) {
       if (nome === 'createLinearGradient' || nome === 'createRadialGradient') {
         return () => ({ addColorStop() {} });
       }
+      if (nome === 'measureText') return (t) => ({ width: String(t).length * 5 });
       if (nome === 'translate') return (x, y) => { actual?.translates.push([x, y]); };
       if (nome === 'rotate') return (a) => { actual?.rotates.push(a); };
       if (nome === 'arc') return (x, y) => { actual?.arcos.push([x, y]); };
@@ -736,20 +730,4 @@ test('9.8: no telemóvel o título não fica à espera de um avião que não est
   assert.match(hero, /if \(mapaAbaixo\) reporTitulo\(\);/, 'no telemóvel o título continua preso ao voo');
   assert.match(hero, /aoProgredir\(prog\) \{\s*if \(mapaAbaixo\) return;/,
     'no telemóvel o voo volta a apagar o título quando arranca');
-});
-
-test('9.8: o mapa de cobertura escreve os nomes também no telemóvel', () => {
-  /* As etiquetas só eram desenhadas com o canvas acima de 430 px: num
-     telemóvel o mapa de cobertura era dez pontos sem nome nenhum — e foi
-     por "as províncias já estarem escritas no mapa" que o cartão dos nomes
-     saiu (9.3). */
-  const fonte = codigoDe('js/main.js');
-  assert.doesNotMatch(fonte, /if \(w > 430\)/, 'o mapa de cobertura continua sem nomes abaixo de 430px');
-  assert.match(fonte, /etiqueta\([^;]*rotuloDe\(nome\)/);
-
-  /* Num canvas de 310 px um nome à direita de Pemba saía pela borda: a
-     etiqueta mede-se e vira para o outro lado quando não cabe. */
-  const etiqueta = /function etiqueta\(x, y, t, cor, align\) \{([\s\S]*?)\n  \}/.exec(fonte)?.[1] ?? '';
-  assert.match(etiqueta, /measureText\(t\)\.width/, 'a etiqueta não mede o texto antes de o escrever');
-  assert.match(etiqueta, /> w - /, 'a etiqueta não confere a borda direita do canvas');
 });

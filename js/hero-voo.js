@@ -471,9 +471,14 @@ export function iniciarVoo(canvas, opcoes = {}) {
       ctx.strokeStyle = '#0F172A';
       ctx.lineJoin = 'round';
       ctx.globalAlpha = 0.85;
-      ctx.strokeText(a.nome, x, y + raio + 9);
+      /* Maputo é a sede: o rótulo diz-o. O nome mais comprido é medido e
+         encostado às bordas, para o canvas não o cortar. */
+      const rotulo = nome === 'Maputo' ? `${a.nome} — Sede` : a.nome;
+      const meia = ctx.measureText(rotulo).width / 2;
+      const xt = Math.min(Math.max(x, meia + 4), w - meia - 4);
+      ctx.strokeText(rotulo, xt, y + raio + 9);
       ctx.fillStyle = `rgba(232,237,245,${0.55 + 0.45 * luz})`;
-      ctx.fillText(a.nome, x, y + raio + 9);
+      ctx.fillText(rotulo, xt, y + raio + 9);
     }
     ctx.restore();
   }

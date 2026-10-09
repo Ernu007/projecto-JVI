@@ -39,20 +39,14 @@ function regra(sel) {
 
 /* ---------- C3: a Matola sai, Maputo é a sede ---------- */
 
-test('C3: a cobertura não tem a Matola — faz parte de Maputo', () => {
-  assert.doesNotMatch(seccao('cobertura'), /Matola/);
-});
-
 test('C3: o ponto da JVI em Maputo chama-se Maputo, não Matola', () => {
   assert.equal(CAPITAIS.Maputo.nome, 'Maputo');
   assert.equal(agencyPoint('Maputo').nome, 'Maputo');
 });
 
-test('C3: Maputo está marcada como sede, com um rótulo visível', () => {
-  const cob = seccao('cobertura');
-  assert.match(cob, /<span class="rota rota--hub">Maputo — Sede<\/span>/);
-  assert.match(cob, /<p class="mapa-aviso"><b>Sede:<\/b>/);
-  assert.match(MAIN, /'Maputo · Sede'/, 'o mapa de cobertura não escreve "Sede" junto de Maputo');
+test('C3: Maputo está marcada como sede no mapa do hero', () => {
+  const hero = fs.readFileSync('js/hero-voo.js', 'utf8');
+  assert.match(hero, /nome === 'Maputo' \? `\$\{a\.nome\} — Sede`/, 'o mapa do hero não escreve "Maputo — Sede"');
 });
 
 /* ---------- C4: os cartões e as setas ---------- */
@@ -78,18 +72,6 @@ test('C4: o cartão "Outras províncias" é maior e está centrado', () => {
   const d = regra('.servico--destaque');
   assert.match(d, /grid-column\s*:\s*1\s*\/\s*-1/, 'o cartão não ocupa as duas colunas');
   assert.match(d, /text-align\s*:\s*center/, 'o texto do cartão não está centrado');
-});
-
-test('C4: no mapa de cobertura as rotas SAEM da sede, com seta e nome do destino', () => {
-  /* A curva começa no hub (Maputo) e acaba na capital. Antes era ao
-     contrário: as linhas iam das províncias para Maputo. */
-  assert.match(MAIN, /ctx\.moveTo\(hx, hy\);\s*ctx\.quadraticCurveTo\(ccx, ccy, x, y\)/,
-    'a rota de cobertura não parte da sede');
-  assert.match(MAIN, /function setaDestino\(/, 'não há seta no destino de cada rota');
-  assert.match(MAIN, /setaDestino\([^)]*\)/);
-  /* O rótulo de cada ponto é o nome da PROVÍNCIA de destino. */
-  assert.match(MAIN, /function rotuloDe\(nome\)/);
-  assert.match(MAIN, /etiqueta\([^;]*rotuloDe\(nome\)/);
 });
 
 /* ---------- C5: os botões de contacto com as cores do Google ---------- */
@@ -225,10 +207,9 @@ test('C7: o JSON-LD diz que serviços são e que províncias serve', () => {
   assert.match(minus(LD.description), /envio de encomendas/);
 });
 
-test('C7: os h2 de serviços e cobertura falam como quem pesquisa', () => {
+test('C7: o h2 de serviços fala como quem pesquisa', () => {
   const h2 = (id) => /<h2[^>]*>([\s\S]*?)<\/h2>/.exec(seccao(id))[1].replace(/<[^>]+>/g, '');
   assert.match(minus(h2('servicos')), /carga aérea e rodoviária/);
-  assert.match(minus(h2('cobertura')), /envio de encomendas/);
 });
 
 test('C7: sem keyword stuffing — nenhum termo repetido à exaustão', () => {

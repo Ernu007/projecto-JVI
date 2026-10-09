@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { linkWa, dados, JVI_WHATSAPP } from '../js/orcamento.js';
+import { linkWa, dados, gerarCodigoRef, msgEmpresa, msgCliente, JVI_WHATSAPP } from '../js/orcamento.js';
 
 test('JVI_WHATSAPP e o numero unico confirmado pelo cliente', () => {
   assert.equal(JVI_WHATSAPP, '258878066265');
@@ -47,12 +47,12 @@ test('dados le o formulario para um objecto simples e aparado', () => {
     },
     { pagamento: 'M-Pesa', pagarNoLevantamento: 'nao' }
   );
-  assert.deepEqual(dados(form), {
+  assert.deepEqual({ ...dados(form), codigo: undefined }, {
     nome: 'João Pedro', apelido: 'Sissu', provincia: 'Nampula',
     morada: 'Sommachine', telefone: '87 806 6265',
     destinatario: 'Ana Maria', provinciaDestino: 'Cabo Delgado',
     peso: '11.7', dimensao: '60 x 40 x 40', descricao: 'tintas PLASCON',
-    pagamento: 'M-Pesa', pagarNoLevantamento: 'nao',
+    pagamento: 'M-Pesa', pagarNoLevantamento: 'nao', codigo: undefined,
   });
 });
 
@@ -61,4 +61,12 @@ test('dados cai nos valores por omissao quando os radios nao existem', () => {
   assert.equal(d.pagamento, 'e-Mola');
   assert.equal(d.pagarNoLevantamento, 'sim');
   assert.equal(d.apelido, '');
+});
+
+test('gerarCodigoRef tem o formato JVI-AAAAMMDD-HHMM-XXX e aparece nas duas mensagens', () => {
+  const c = gerarCodigoRef();
+  assert.match(c, /^JVI-\d{8}-\d{4}-[0-9A-Z]{3}$/);
+  const d = { ...dados(FORM_FALSO({ nome: 'Ana', peso: '5' })), codigo: c };
+  assert.ok(msgEmpresa(d).includes(`*Código de referência:* ${c}`));
+  assert.ok(msgCliente(d).includes(`Código de referência do seu pedido: *${c}*`));
 });

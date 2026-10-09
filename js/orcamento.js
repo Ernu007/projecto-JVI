@@ -87,7 +87,7 @@ export function msgEmpresa(d) {
   return [
     '*NOVO PEDIDO DE ORÇAMENTO — JVI Carga & Serviços*',
     '',
-    `*Ref.:* JVI/${refInterno()}`,
+    `*Código de referência:* ${num(d.codigo)}`,
     '',
     '*EMISSOR*',
     `• Nome: ${num(d.nome)} ${num(d.apelido)}`.replace('— —', '').trim(),
@@ -126,6 +126,8 @@ export function msgCliente(d) {
     `• Carga: ${num(d.descricao)} — ${num(d.peso)} kg`,
     `• Destino: ${num(d.provinciaDestino)}`,
     '',
+    `Código de referência do seu pedido: *${num(d.codigo)}*`,
+    '',
     p
       ? `*TOTAL: ${formatarMT(p.total)}* (base ${formatarMT(p.base)} + IVA ${formatarMT(p.iva)})`
       : 'O total é confirmado pela nossa equipa.',
@@ -145,6 +147,7 @@ export function msgCliente(d) {
 export function linhasResumo(d) {
   const p = calcularPreco(d.peso);
   return [
+    { rotulo: 'Código de referência', valor: num(d.codigo) },
     { rotulo: 'Emissor', valor: `${num(d.nome)} ${num(d.apelido)}`.replace('— —', '').trim() },
     { rotulo: 'Origem', valor: num(d.provincia) },
     { rotulo: 'Morada', valor: num(d.morada) },
@@ -176,6 +179,7 @@ export function dados(form) {
     peso: g('peso'), dimensao: g('dimensao'), descricao: g('descricao'),
     pagamento: form.querySelector('input[name="pagamento"]:checked')?.value || PAGAMENTOS[0],
     pagarNoLevantamento: form.querySelector('input[name="pagarNoLevantamento"]:checked')?.value || 'sim',
+    codigo: gerarCodigoRef(),
   };
 }
 
@@ -220,10 +224,11 @@ export function planoEnvio(d) {
   };
 }
 
-function refInterno() {
+export function gerarCodigoRef() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  const sufixo = Math.random().toString(36).slice(2, 5).toUpperCase();
+  return `JVI-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}-${sufixo}`;
 }
 
 /* =========================================================

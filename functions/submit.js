@@ -86,7 +86,7 @@ export const LIMITES = {
   nome: 80, apelido: 80, provincia: 40, morada: 200, telefone: 40,
   destinatario: 120, provinciaDestino: 40, peso: 14, dimensao: 60,
   descricao: 1200, pagamento: 40, pagarNoLevantamento: 6, preco_total: 16,
-  origem: 20, website: 200,
+  origem: 20, website: 200, codigo: 40,
 };
 
 /* Conjuntos de caracteres em vez de "qualquer coisa menos o sinal": assim um
@@ -119,6 +119,7 @@ export const CAMPOS = [
   ['pagamento', 'Forma de pagamento'],
   ['pagarNoLevantamento', 'Paga no levantamento'],
   ['preco_total', 'Total calculado (MZN)'],
+  ['codigo', 'Código de referência (site)'],
 ];
 
 export const PAGAMENTOS = ['e-Mola', 'M-Pesa', 'Transferência bancária'];

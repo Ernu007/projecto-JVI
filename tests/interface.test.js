@@ -57,7 +57,6 @@ const MENU_ESPERADO = [
   { texto: 'Nossos serviços.', alvo: '#servicos' },
   { texto: 'Como funciona.', alvo: '#fluxo' },
   { texto: 'Nosso trabalho.', alvo: '#galeria' },
-  { texto: 'Cobertura.', alvo: '#cobertura' },
   { texto: 'A JVI.', alvo: '#jvi' },
   { texto: 'Nossa empresa.', alvo: '#empresa' },
   { texto: 'Contactos.', alvo: '#contactos' },
@@ -223,10 +222,12 @@ test('continua a haver um botão "Pedir orçamento" no topo, e é o mesmo em tod
 test('nenhum botão "Pedir orçamento" foi trocado por uma acção secundária', () => {
   /* D19: o orçamento é a acção primária. Passar a `btn--vidro` no topo
      invertia a hierarquia do ecrã. */
-  const cabecalho = /<div class="header__cta">([\s\S]*?)<\/div>/.exec(HTML)?.[1];
-  assert.ok(cabecalho, 'não encontrei .header__cta');
-  assert.match(cabecalho, /btn--primario/,
-    'o botão de orçamento do topo deixou de ser primário');
+  /* Rollback V1: o cliente tirou o botão do cabeçalho; ficam o do hero e o
+     do menu móvel, e ambos continuam primários. */
+  assert.doesNotMatch(HTML, /<div class="header__cta">/, 'o botão do cabeçalho voltou');
+  const botoes = [...HTML.matchAll(/<button class="([^"]*)"[^>]*data-abrir-orc[^>]*>\s*(?:<svg[\s\S]*?<\/svg>)?\s*Pedir orçamento/g)];
+  assert.ok(botoes.length >= 2, 'os botões do hero e do menu desapareceram');
+  for (const [, cls] of botoes) assert.match(cls, /btn--primario/, 'um botão de orçamento deixou de ser primário');
 });
 
 /* ---------- B3, B4, B5, B6: cartões de serviço ---------- */
@@ -421,7 +422,7 @@ test('9.5: quem arrasta com o dedo fica na fotografia que vê', async () => {
   const { indiceMaisProximo } = await import('../js/galeria.js');
   assert.equal(typeof indiceMaisProximo, 'function', 'galeria.js não exporta indiceMaisProximo');
   for (const largura of [272, 312, 344, 520, 860]) {
-    const inicios = Array.from({ length: 11 }, (_, k) => k * (largura + 16));
+    const inicios = Array.from({ length: 9 }, (_, k) => k * (largura + 16));
     inicios.forEach((x, k) => {
       assert.equal(indiceMaisProximo(x, inicios), k, `largura ${largura}: fotografia ${k + 1}`);
       /* E um encaixe que ficou a uns píxeis do sítio é a mesma fotografia. */
@@ -449,7 +450,7 @@ test('a galerie continua a expor data-gal-src: o lightbox depende disso', () => 
      imagens por outro atributo parte os dois. */
   assert.ok(HTML.includes('data-gal-src'), 'nenhuma imagem tem data-gal-src');
   const itens = [...HTML.matchAll(/data-gal-src="([^"]+)"/g)].map((m) => m[1]);
-  assert.equal(itens.length, 11, `a galeria tem ${itens.length} fotografias; são 11`);
+  assert.equal(itens.length, 9, `a galeria tem ${itens.length} fotografias; são 9`);
   for (const [, alt] of HTML.matchAll(/data-gal-src="[^"]+"\s*\n?\s*data-gal-alt="([^"]+)"/g)) {
     assert.ok(alt.trim().length > 10, `um alt ficou vazio: "${alt}"`);
   }
