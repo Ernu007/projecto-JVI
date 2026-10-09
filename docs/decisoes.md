@@ -1097,3 +1097,28 @@ profissionalismo. Vi cada fotografia antes de a aceitar.
 | A fotografia vai inteira (`object-fit: contain`) sobre ela própria desfocada (`.gal__fundo`, `blur(22px)`); o palco continua 4:3, máx. 860 px (D9.5) | As fotografias têm proporções muito diferentes (1280×576, 926×720, 644×1178, 576×1280): com `cover` as de pé ficavam a 30 % da altura e as largas perdiam um terço da carga. O desfoque é estático (não animado) e a mesma URL é pedida uma vez. |
 | `loading="lazy"` em todas menos a primeira (foto e fundo); o palco no telemóvel continua a sair 16 px de cada margem | Pedido. |
 | Testes: `tests/galeria.test.js` (fotografias, ausência de setas/pausa, CSS só opacity/transform, e **comportamento** com DOM e relógio simulados: ciclo de 4 s, cada razão de pausa, swipe, teclado, movimento reduzido); saíram do `interface.test.js` e do `dom.test.js` os testes do carrossel de scroll-snap | O comportamento passou de «scrollTo numa pista» a estados; os testes antigos já não descreviam nada. |
+
+### D59 — camião em andamento com a marca JVI (10B.7)
+
+`assets/img/camiao.webp` (imagem de banco muito usada por empresas de carga) saiu.
+Em Serviços → Transporte rodoviário está agora `assets/img/camiao-jvi.webp`
+(1000×625, 16:10 como a caixa da figura, 30 KB), gerada por `tools/gerar-camiao.py`.
+
+| Decisão | Razão |
+|---|---|
+| Base: `EmEQ6kK_5P0.jpg` (semirreboque prateado ao pôr do sol, em andamento numa autoestrada). Licença Unsplash, uso livre. **Crédito**: foto Unsplash `EmEQ6kK_5P0` — o nome do fotógrafo não veio com os ficheiros descarregados e não o inventei: acrescentar a partir da página `unsplash.com/photos/EmEQ6kK_5P0` | É a única das três candidatas com um camião em andamento e uma lateral grande e lisa. As outras duas (vista de cima, camiões pequenos de frente) não têm baú onde pôr uma marca. O crédito está num comentário HTML ao lado da imagem e aqui. |
+| Recorte `(0, 540, 1600, 1540)` | Deixa de fora os guarda-lamas com «TRANS CHICAGO TRUCK GROUP» e «ROADSQUAD» (abaixo de y 1640): não foi preciso apagar texto. |
+| Logótipo: `assets/logo-full.png` (RGB com fundo preto) → alfa pelo brilho, recortado ao símbolo e ao «JVI» (linhas 368–1082) | O «Carga & Serviços, Lda» é de letra fina e ilegível a esta escala; deixá-lo borrado fazia o logótipo parecer falso. O ficheiro tem uma linha de ruído nas bordas que engana o `getbbox`, por isso o recorte é por linhas. |
+| Perspectiva com `Image.transform(PERSPECTIVE)`; o quadrilátero vem do ponto de fuga das horizontais do baú (as linhas do telhado e do rodapé convergem para a esquerda, VP ≈ (-300, 1320) na foto original), por isso o logótipo encolhe para o lado da cabine | O lado do baú é oblíquo; um paralelogramo simples não segue as linhas da chapa. |
+| Mistura: tinta menos saturada e mais escura (vinil, não néon), multiplicada pelo brilho local da chapa (reflexos do pôr do sol, costuras, rebites) e por um toque do tom ambiente; opacidade 0,96 | Mantém os reflexos e as costuras verticais a passarem «por cima» do logótipo. |
+
+**Avaliação honesta:** ao tamanho em que aparece no site (cerca de 400–500 px de
+largura) a marca lê-se como um autocolante de vinil no baú, acompanha a
+perspectiva e as costuras, e não tem halos. Não é perfeita: a palavra «JVI» tem
+um traço fino e um gradiente do próprio ficheiro do logótipo, por isso fica um
+pouco mais apagada que o símbolo, e uma foto de banco com marca composta não
+resiste a uma ampliação. O fundo continua a ser uma autoestrada de outro país
+(a matrícula e os rebites são os de um semirreboque norte-americano). Se o
+cliente tiver uma fotografia de um camião da própria JVI, deve substituir esta
+com o mesmo nome. Para regenerar: descarregar a foto para `.tmp/fotos-camiao/`
+e correr `python tools/gerar-camiao.py`.

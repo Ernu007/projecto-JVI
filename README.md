@@ -289,13 +289,14 @@ cada `<button class="gal__item">` na secção `#sobre` de `index.html`.
 
 ### Imagens de serviço (`assets/img/`)
 
-`camiao.webp`, `terminal.jpg` e `aviao.jpg` vieram da carta de apresentação e
-são **placeholders** — o camião é um camião de stock, não um da JVI. Para usar
-as fotos reais, substituir com o **mesmo nome**:
+`terminal.jpg` e `aviao.jpg` vieram da carta de apresentação e são
+**placeholders**. O camião (`camiao-jvi.webp`) é uma fotografia da Unsplash com a
+marca JVI aplicada por `tools/gerar-camiao.py` (ver D59). Para usar fotos reais,
+substituir com o **mesmo nome**:
 
 | Ficheiro | Onde é usado | Dimensões reais | Peso |
 |---|---|---|---|
-| `camiao.webp` | Serviço 01 + Contactos | 800×527 | ~37 KB |
+| `camiao-jvi.webp` | Serviços → Transporte rodoviário | 1000×625 | ~30 KB |
 | `terminal.jpg` | Serviço 02 | 1120×1120 | ~152 KB |
 | `aviao.jpg` | Serviço 03 | 1116×1491 | ~89 KB |
 

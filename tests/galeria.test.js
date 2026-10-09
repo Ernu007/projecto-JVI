@@ -277,3 +277,15 @@ test('10B.6: com prefers-reduced-motion não roda sozinho, mas o deslize e o tec
     assert.equal(c.activo(), 1);
   } finally { fim(); }
 });
+
+/* ---------- 10B.7: o camião ---------- */
+
+test('10B.7: o camião de banco saiu; o de Serviços é o gerado, com crédito e ≤ 200 KB', () => {
+  assert.ok(!fs.existsSync('assets/img/camiao.webp'), 'a imagem de banco antiga ainda existe');
+  assert.doesNotMatch(SITE, /camiao\.webp/);
+  const s = seccao('servicos');
+  assert.match(s, /<img src="assets\/img\/camiao-jvi\.webp" alt="[^"]*JVI[^"]*"[^>]*width="1000" height="625"/);
+  assert.match(s, /<!-- Fotografia: Unsplash[^>]*EmEQ6kK_5P0/);
+  assert.ok(fs.statSync('assets/img/camiao-jvi.webp').size <= 200 * 1024);
+  assert.ok(fs.existsSync('tools/gerar-camiao.py'));
+});
