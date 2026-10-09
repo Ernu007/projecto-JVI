@@ -574,33 +574,28 @@ a.cont-item:hover { border-color: var(--verde); background: rgb(var(--verde-rgb)
   transition: width 0.12s linear;
 }
 
-/* Entrada do hero */
-.hero__conteudo > * { opacity: 0; transform: translateY(26px); }
-.hero.pronto .hero__conteudo > * { animation: heroEntra 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-.hero.pronto .hero__conteudo > *:nth-child(1) { animation-delay: 0.10s; }
-.hero.pronto .hero__conteudo > *:nth-child(2) { animation-delay: 0.22s; }
-.hero.pronto .hero__conteudo > *:nth-child(3) { animation-delay: 0.34s; }
+/* Entrada do hero. Fase 10B (10B.2): o <h1> NÃO entra aqui nem em lado
+   nenhum com opacidade, blur ou deslocamento: tem de estar nítido e opaco
+   desde o primeiro paint, sem esperar por JS, pelo canvas ou pelo avião
+   (com internet fraca ninguém o lia). Só o resto (lead e botões) entra,
+   e só por CSS: sem JS também aparecem. */
+.hero__conteudo > *:not(h1) { opacity: 0; transform: translateY(26px); animation: heroEntra 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.hero__conteudo > *:nth-child(2) { animation-delay: 0.10s; }
+.hero__conteudo > *:nth-child(3) { animation-delay: 0.22s; }
 @keyframes heroEntra { to { opacity: 1; transform: none; } }
 
-/* Palavras do titulo: cada uma acende quando o aviao passa
-   pela provincia correspondente. O JS escreve --p (0..1) em cada. */
+/* Título do hero: legível por inteiro desde o início. O único efeito é um
+   sublinhado verde que cresce por baixo (não esconde nem desfoca nada). */
 .hero h1 { display: grid; gap: 0 0.28em; }
+.hero h1::after {
+  content: ""; display: block; width: 72px; height: 4px; margin-top: 14px;
+  border-radius: 2px; background: var(--verde-marca);
+  transform-origin: left center; animation: sublinhaCresce 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+@keyframes sublinhaCresce { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .h1linha { display: block; }
 .pal {
   display: inline-block;
-  /* O piso é 0.62, não 0. Com 0.12 o título principal ficava a
-     1,26:1 — quase invisível — durante os ~7 segundos que a animação
-     do voo demora, e para sempre se o canvas não arrancar. A 0.62 o
-     pior estado dá ~4,4:1, acima do 3:1 que o WCAG exige para texto
-     grande. A animação passa a ser um acender, não um desaparecer.
-     O var(--p, 1) garante que sem JS o título fica totalmente
-     visível. */
-  opacity: calc(0.62 + 0.38 * var(--p, 1));
-  filter: blur(calc((1 - var(--p, 1)) * 3px));
-  transform: translateY(calc((1 - var(--p, 1)) * 0.28em));
-  transition: opacity .5s cubic-bezier(0.22, 1, 0.36, 1),
-              filter .5s cubic-bezier(0.22, 1, 0.36, 1),
-              transform .5s cubic-bezier(0.22, 1, 0.36, 1);
   color: var(--verde);
 }
 .pal--feio { color: transparent; }
@@ -609,4 +604,5 @@ a.cont-item:hover { border-color: var(--verde); background: rgb(var(--verde-rgb)
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .hero__conteudo > * { opacity: 1; transform: none; }
+  .hero h1::after { animation: none; }
 }

@@ -1026,3 +1026,19 @@ Contactos (`#contactos`).
 | Item activo: `aria-current="true"` posto por `marcarSeccaoActual` (IntersectionObserver + scroll/resize): a última secção cujo topo já passou da linha do cabeçalho; no fim da página, a última | O IntersectionObserver sozinho falha com secções muito altas (nenhuma passa o limiar); o cálculo é barato e só corre quando uma secção muda ou há scroll. `aria-current="true"` e não `page`: já não há páginas. |
 | `.hero, .secao-pagina { scroll-margin-top: 64px }` e `.pagina-topo` com 40 px de padding em cima (eram 112 px, que compensavam o cabeçalho fixo da página própria) | O título da secção não fica tapado pelo cabeçalho. Medido em 10B.8. |
 | Testes: `tests/paginas.js` exporta `SITE` (a página), `seccao(id)` e `ORDEM`; `tests/fase10.test.js` reescrito para as regras da 10B.1 (ordem, âncoras, a11y, uma só vez, links internos) | As regras de conteúdo mantêm-se; só mudou o sítio onde vivem. |
+
+### D54 — o título do hero é nítido desde o primeiro paint (10B.2)
+
+«A sua carga, em mãos seguras.» demorava a aparecer: cada palavra (`.pal`)
+começava com blur, opacidade 0,62 e deslocada, e só acendia com o avanço do
+avião; e o contentor `.hero__conteudo > *` tinha `opacity: 0` até o JS pôr a
+classe `.pronto`. Com internet fraca o `main.js` chega tarde e o título
+ficava invisível.
+
+| Decisão | Razão |
+|---|---|
+| `.pal`, `.h1linha` e `.hero h1` sem `filter`, `opacity`, `transform`, `transition` nem `--p` | Texto 100 % legível sem depender de JS, do canvas ou do avião. |
+| A entrada do hero (`heroEntra`) passou a `.hero__conteudo > *:not(h1)` e já não precisa de `.hero.pronto` | O h1 fica de fora; o lead e os botões entram por CSS puro, por isso também aparecem sem JS. |
+| Efeito mantido, subtil: sublinhado verde de 72×4 px que cresce (`h1::after`, `scaleX`) | Não reduz a legibilidade; desliga-se com `prefers-reduced-motion`. |
+| `main.js` deixou de escrever `--p`, de ter `reporTitulo`, a rede de segurança de 14 s e o `matchMedia(899px)` do título; `iniciarVoo` corre sem `aoProgredir` | Código morto depois da mudança. O `matchMedia` de 899 px continua no CSS e no `hero-voo.js`. |
+| `tests/css.test.js` (10B.2): falha se `.hero h1`, `.h1linha` ou `.pal` tiverem blur, opacidade < 1, transform/transition/animation ou `--p`; se o contentor voltar a esconder o h1; ou se o `main.js` voltar a escrever `--p`. `tests/mapa.test.js` confere que `iniciarHero` não toca no título | Substituem o teste do «piso de opacidade 0,62» e o do telemóvel. |

@@ -178,10 +178,9 @@ test('10.3: o hero é curto — nunca mais alto do que 720 px — e o telemóvel
   assert.doesNotMatch(hero, /min-height:\s*100svh\s*;/, 'o hero voltou a ocupar o ecrã inteiro');
 
   /* Entre 760 e 899 px o texto e o mapa sobrepunham-se (o mapa fica a 66% da
-     largura): o hero passa a coluna abaixo de 900 px, em CSS, no JS do voo e
-     no JS do título — os três têm de ser o mesmo número. */
+     largura): o hero passa a coluna abaixo de 900 px, em CSS e no JS do voo — têm de ser o mesmo número (o título já não
+     depende do voo, 10B.2). */
   assert.match(css, /@media \(max-width: 899px\) \{\s*\.hero \{/);
   const voo = fs.readFileSync('js/hero-voo.js', 'utf8');
   assert.deepEqual([...new Set([...voo.matchAll(/w < (\d+)/g)].map((m) => m[1]))], ['900']);
-  assert.match(fs.readFileSync('js/main.js', 'utf8'), /matchMedia\('\(max-width: 899px\)'\)/);
 });

@@ -103,8 +103,7 @@ window.addEventListener('resize', marcarSeccaoActual);
 marcarSeccaoActual();
 
 /* =========================================================
-   HERO — voo da carga (Maputo -> Pemba -> Maputo, em loop) e
-   revelacao do titulo
+   HERO — voo da carga (Maputo -> Pemba -> Maputo, em loop)
    ========================================================= */
 import { iniciarVoo } from './hero-voo.js';
 
@@ -113,52 +112,15 @@ function iniciarHero() {
   const hero = document.getElementById('inicio');
   if (!canvas || !hero) return;
 
-  /* Cada palavra do título acende quando o avião entra na província
-     correspondente. Sem o scene, o título fica todo visível. */
-  const palavras = [...hero.querySelectorAll('.pal')];
-  const marca = palavras.map((el) => {
-    el.style.setProperty('--p', '0');
-    return el;
-  });
-  /* Se a animação não arrancar, o título não pode ficar apagado: o
-     piso de opacidade em CSS segura-se, mas melhor é repô-lo. */
-  const reporTitulo = () => marca.forEach((el) => el.style.setProperty('--p', '1'));
-
-  /* Fase 9 (9.8): no telemóvel o mapa fica por baixo do conteúdo, fora do
-     primeiro ecrã, e o voo só arranca quando se rola até lá. O título não
-     pode ficar desfocado à espera de um avião que não está à vista: acende
-     logo, e o voo deixa de lhe mexer. O limite é o do CSS (`.hero__fundo`
-     em fluxo abaixo de 760px). */
-  const mapaAbaixo = window.matchMedia('(max-width: 899px)').matches;
-  if (mapaAbaixo) reporTitulo();
-
+  /* Fase 10B: o título não depende deste código — está visível desde o
+     primeiro paint. Aqui só arranca o voo. */
   requestAnimationFrame(() => {
-    hero.classList.add('pronto');
     try {
-      iniciarVoo(canvas, {
-        aoProgredir(prog) {
-          if (mapaAbaixo) return;
-          palavras.forEach((el, i) => {
-            const alvo = (i + 0.35) / palavras.length;
-            const v = Math.max(0, Math.min(1, (prog - alvo) / 0.16));
-            el.style.setProperty('--p', v.toFixed(3));
-          });
-        },
-      });
+      iniciarVoo(canvas);
     } catch (erro) {
-      console.warn('JVI: a animação do hero não arrancou — título reposto.', erro);
-      reporTitulo();
+      console.warn('JVI: a animação do hero não arrancou.', erro);
     }
   });
-  /* Rede de segurança: se daqui a 14 s o título ainda estiver apagado,
-     é porque o IntersectionObserver nunca disparou. A primeira ida dura
-     11 s (Fase 8: dez províncias em vez de seis), por isso a margem; da
-     volta em diante o voo já não mexe no título. */
-  setTimeout(() => {
-    if (palavras.some((el) => Number(el.style.getPropertyValue('--p')) < 1)) {
-      reporTitulo();
-    }
-  }, 14000);
 }
 
 /* =========================================================

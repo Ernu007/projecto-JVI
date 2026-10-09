@@ -26,8 +26,6 @@ test('todo token usado tem de estar definido em :root', () => {
   for (const [, , txt] of CSS) {
     for (const m of txt.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) usados.add(m[1]);
   }
-  // `--p` é escrito por js/hero-voo.js com style.setProperty, em runtime.
-  usados.delete('--p');
   assert.deepEqual([...usados].filter((t) => !definidos.has(t)), []);
 });
 
@@ -173,29 +171,26 @@ test('9.6: o verde do WhatsApp nao se confunde com o verde da JVI', () => {
   }
 });
 
-/* O titulo do hero comeca apagado e acende com a animacao do voo. Com
-   o piso antigo (0.12) o <h1> ficava a 1,26:1 durante ~7 segundos, e
-   para sempre se o canvas nao arrancasse. O piso tem de manter o pior
-   estado acima de 3:1, que e o que o WCAG exige para texto grande. */
-test('o titulo do hero mantem-se legivel mesmo no pior estado', () => {
-  const m = /opacity:\s*calc\(\s*([\d.]+)\s*\+\s*[\d.]+\s*\*\s*var\(--p/.exec(bloco);
-  assert.ok(m, 'a regra de opacidade do .pal mudou de forma');
-  const piso = Number(m[1]);
-  assert.ok(piso >= 0.6,
-    `o piso do titulo desceu para ${piso} — o h1 fica ilegivel no pior estado`);
-
-  // pior caso: cada cor do degradê do título, composta sobre o fundo do
-  // hero com a opacidade no piso. As cores vêm do gradiente no CSS.
-  const fundo = hex(token('--base'));
-  const regraPal = /\.pal\s*\{([\s\S]*?)\n\}/.exec(bloco)?.[1] ?? '';
-  const cores = [...regraPal.matchAll(/(?:^|[\s;])color:\s*var\((--[a-z-]+)\)/g)]
-    .map((x) => x[1])
-    .map((nome) => hex(token(nome)));
-  assert.ok(cores.length >= 1, 'não encontrei a cor do título');
-
-  for (const frente of cores) {
-    const composta = frente.map((c, i) => Math.round(piso * c + (1 - piso) * fundo[i]));
-    const r = ratio(composta, fundo);
-    assert.ok(r >= 3, `cor do degradê a opacidade ${piso} dá ${r.toFixed(2)}:1, abaixo de 3:1`);
+/* Fase 10B (10B.2): o titulo do hero tem de estar nitido e opaco desde o
+   primeiro paint. Antes comecava apagado/desfocado e acendia com o voo; com
+   internet fraca ninguem o lia. Nada no h1, nas palavras ou no contentor do
+   hero pode ter blur, opacidade < 1, deslocamento ou depender de --p. */
+test('10B.2: o titulo do hero nao tem blur, opacidade, deslocamento nem --p', () => {
+  const regras = [...bloco.matchAll(/([^{}]*)\{([^{}]*)\}/g)]
+    .map((m) => ({ sel: m[1].trim(), corpo: m[2] }));
+  const doTitulo = regras.filter((r) => /(^|[\s,])(\.hero h1|\.h1linha|\.pal)(?![\w-])/.test(r.sel)
+    && !/::after/.test(r.sel));
+  assert.ok(doTitulo.length >= 3, 'não encontrei as regras do título');
+  for (const r of doTitulo) {
+    assert.doesNotMatch(r.corpo, /filter\s*:|backdrop-filter|--p/, `${r.sel}: blur/filtro ou --p`);
+    assert.doesNotMatch(r.corpo, /opacity\s*:\s*(0(\.\d+)?|calc|0?\.\d+)\s*;/, `${r.sel}: opacidade < 1`);
+    assert.doesNotMatch(r.corpo, /transform\s*:|transition\s*:|animation\s*:/, `${r.sel}: desloca ou anima o texto`);
   }
+  /* O contentor do hero anima os filhos, mas nunca o h1. */
+  assert.match(bloco, /\.hero__conteudo > \*:not\(h1\)\s*\{[^}]*opacity:\s*0/);
+  assert.doesNotMatch(bloco, /\.hero__conteudo > \*\s*\{[^}]*opacity:\s*0/);
+  assert.doesNotMatch(bloco, /\.hero\.pronto/, 'a entrada do hero voltou a depender de JS');
+  /* E o JS já não escreve --p. */
+  assert.doesNotMatch(fs.readFileSync('js/main.js', 'utf8'), /--p['"]|reporTitulo/);
+  assert.doesNotMatch(fs.readFileSync('index.html', 'utf8'), /<h1[^>]*style=/);
 });

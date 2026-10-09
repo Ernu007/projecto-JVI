@@ -714,15 +714,8 @@ test('9.8: a 360 px o mapa do hero enche a caixa que tem, sem sair dela', () => 
   }
 });
 
-test('9.8: no telemóvel o título não fica à espera de um avião que não está à vista', () => {
-  /* As palavras do título acendem com o avanço do voo. No telemóvel o mapa
-     fica abaixo do conteúdo: o voo só arranca quando se rola até lá, e até
-     lá o título ficava desfocado — 14 s, até à rede de segurança. */
+test('10B.2: o título do hero não depende do voo — o main.js não lhe mexe', () => {
   const fonte = codigoDe('js/main.js');
   const hero = /function iniciarHero\(\) \{([\s\S]*?)\n\}/.exec(fonte)?.[1] ?? '';
-  assert.match(hero, /matchMedia\('\(max-width: 899px\)'\)/, 'o hero não distingue o telemóvel');
-  assert.match(hero, /if \(mapaAbaixo\) reporTitulo\(\);/, 'no telemóvel o título continua preso ao voo');
-  assert.match(hero, /aoProgredir\(prog\) \{\s*if \(mapaAbaixo\) return;/,
-    'no telemóvel o voo volta a apagar o título quando arranca');
+  assert.doesNotMatch(hero, /\.pal|--p|reporTitulo|aoProgredir/, 'o hero voltou a prender o título ao voo');
 });
-
