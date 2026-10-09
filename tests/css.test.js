@@ -125,7 +125,9 @@ test('10.1: o texto do tema claro passa AA sobre os dois fundos claros', () => {
 
 test('10.1: sem laranja nem cores do Google na interface', () => {
   for (const [, f, txt] of CSS) {
-    const sem = txt.replace(/\/\*[\s\S]*?\*\//g, ' ');
+    /* Fase 10B (10B.3): o cliente pediu o pin vermelho do Google Maps no botão
+       «Como chegar à JVI». Só passa como o token `--maps`, declarado uma vez. */
+    const sem = txt.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--maps:\s*#EA4335;/, ' ');
     assert.doesNotMatch(sem, /laranja|google-|#EA8240|#EA4335|#34A853|#FBBC05|#4285F4/i, `${f} ainda tem laranja ou cores do Google`);
   }
 });

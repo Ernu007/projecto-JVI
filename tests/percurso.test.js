@@ -92,12 +92,13 @@ test('a nota diz que as viragens dependem de onde se parte e remete para o Maps'
 
 test('ha um percurso junto a cada botao "Como chegar a JVI"', () => {
   const botoes = HTML.match(/<a\b[^>]*google\.com\/maps\/dir\/[^>]*>/g) ?? [];
-  assert.equal(botoes.length, 1, 'esperava um só botão de direcções: o dos Contactos');
-  assert.equal(blocos().length, botoes.length, 'cada botão de direcções tem de ter o percurso ao lado');
+  /* Fase 10B: o botão está no hero e em Contactos; o percurso é só o dos Contactos. */
+  assert.equal(botoes.length, 2, 'esperava dois botões de direcções: o do hero e o dos Contactos');
+  assert.equal(blocos().length, 1, 'o percurso vive só em Contactos, ao lado do segundo botão');
 
   /* "Junto": entre o fim do botão e o percurso só pode haver o fecho do
      contentor das acções — nada de outro conteúdo pelo meio. */
-  for (const m of HTML.matchAll(/google\.com\/maps\/dir\/[\s\S]*?Como chegar à JVI\s*<\/a>([\s\S]*?)<div class="percurso">/g)) {
+  for (const m of HTML.matchAll(/google\.com\/maps\/dir\/[^<]*?<\/svg>\s*Como chegar à JVI\s*<\/a>([\s\S]*?)<div class="percurso">/g)) {
     assert.match(m[1], /^\s*(?:<\/div>)?\s*$/, `há conteúdo entre o botão e o percurso: ${m[1].trim().slice(0, 80)}`);
   }
   assert.equal([...HTML.matchAll(/Como chegar à JVI\s*<\/a>\s*(?:<\/div>)?\s*<div class="percurso">/g)].length, 1);

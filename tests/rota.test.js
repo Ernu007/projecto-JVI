@@ -100,7 +100,7 @@ test('o "+" do Plus Code vai como %2B, nunca cru', () => {
 
   /* E no HTML, que é escrito à mão: os DOIS botões. */
   const hrefs = [...HTML.matchAll(/href="(https:\/\/www\.google\.com\/maps\/dir\/[^"]*)"/g)].map((m) => desescapar(m[1]));
-  assert.equal(hrefs.length, 1, 'esperava um só botão de direcções: o dos Contactos');
+  assert.equal(hrefs.length, 2, 'esperava dois botões de direcções: o do hero e o dos Contactos');
   for (const h of hrefs) {
     assert.equal(paramCru(h, 'destination'), '3H9C%2BVJ8%2C%20Maputo');
     assert.equal(h, linkDirecoes());

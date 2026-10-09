@@ -129,13 +129,22 @@ function accoesDoHero() {
 
 /* ---------- Fase 10: as acções do hero ---------- */
 
-test('10.3: o hero tem duas acções — o WhatsApp em destaque e o orçamento', () => {
+test('10.3/10B.3: o hero tem três acções — o WhatsApp em destaque, o orçamento e, secundário, «Como chegar»', () => {
   const accoes = accoesDoHero();
-  assert.equal(accoes.length, 2);
+  assert.equal(accoes.length, 3);
   assert.match(accoes[0].atributos, /wa\.me\//, 'a primeira acção do hero deixou de ser o WhatsApp');
   assert.match(accoes[0].atributos, /class="btn btn--wa btn--grande"/);
   assert.match(accoes[1].atributos, /href="#orcamento"/, 'a segunda acção deixou de levar ao orçamento');
   assert.doesNotMatch(accoes[1].atributos, /btn--primario|btn--wa/, 'o orçamento do hero compete com o WhatsApp');
+  /* Fase 10B (10B.3): «Como chegar à JVI», com o estilo antigo, a seguir. É
+     secundário: nem verde da marca nem verde WhatsApp. */
+  assert.match(accoes[2].atributos, /google\.com\/maps\/dir\//, 'a terceira acção deixou de ser «Como chegar à JVI»');
+  assert.match(accoes[2].atributos, /class="btn btn--vidro btn-maps"/);
+  assert.doesNotMatch(accoes[2].atributos, /btn--primario|btn--wa/, 'as direcções competem com o WhatsApp');
+  const maps = /\.btn-maps\s*\{([^}]*)\}/.exec(CSS)?.[1] ?? '';
+  assert.match(maps, /flex-direction:\s*column/, 'o ícone deixou de ficar numa faixa por cima do texto');
+  assert.match(maps, /background:\s*var\(--c-fundo\)/, 'o botão perdeu o fundo');
+  assert.match(CSS, /\.btn-maps svg \{[^}]*height:\s*44px;[^}]*color:\s*var\(--maps\)/, 'o pin deixou de ser vermelho e grande');
 });
 
 test('10.3: o WhatsApp do hero tem o verde do WhatsApp, liso e sem sombra', () => {

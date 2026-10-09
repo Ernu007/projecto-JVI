@@ -38,6 +38,9 @@
   /* Verde do WhatsApp: só nos botões WhatsApp. */
   --wa:    #25D366;
 
+  /* Vermelho do pin do Google Maps: só no botão «Como chegar à JVI». */
+  --maps:  #EA4335;
+
   /* Tema claro (10.1). Os valores vivem aqui, com nome próprio, para o
      `tools/contraste.py` os medir; `.seccao` e `.tema-claro` é que os
      vestem. O verde claro `#A9CF44` NÃO serve de texto sobre branco
@@ -201,6 +204,19 @@ ul { list-style: none; }
 }
 .btn--vidro:hover { background: var(--borda); transform: translateY(-2px); }
 .btn--bloco { width: 100%; }
+/* Fase 10B (10B.3): «Como chegar à JVI» com o estilo antigo (a12bf1f) — o
+   pin do Google Maps, vermelho e grande, numa faixa de 44 px POR CIMA do
+   texto. Agora com fundo próprio (cartão branco com borda): no hero é o
+   terceiro botão e secundário; em Contactos parecia só texto. Os dois são
+   iguais. Não é verde nem preenchido de cor: não compete com o WhatsApp. */
+.btn-maps {
+  flex-direction: column; gap: 8px; width: 100%; padding: 14px 16px 16px;
+  border-radius: var(--raio);
+  background: var(--c-fundo); color: var(--c-texto);
+  border: 1px solid var(--borda-forte); box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.45);
+}
+.btn-maps:hover { background: var(--c-fundo-2); }
+.btn-maps svg { display: block; width: 100%; height: 44px; color: var(--maps); }
 .btn:active { transform: translateY(-1px) scale(0.99); }
 
 /* =========================================================

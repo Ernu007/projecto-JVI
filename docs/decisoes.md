@@ -1042,3 +1042,15 @@ ficava invisível.
 | Efeito mantido, subtil: sublinhado verde de 72×4 px que cresce (`h1::after`, `scaleX`) | Não reduz a legibilidade; desliga-se com `prefers-reduced-motion`. |
 | `main.js` deixou de escrever `--p`, de ter `reporTitulo`, a rede de segurança de 14 s e o `matchMedia(899px)` do título; `iniciarVoo` corre sem `aoProgredir` | Código morto depois da mudança. O `matchMedia` de 899 px continua no CSS e no `hero-voo.js`. |
 | `tests/css.test.js` (10B.2): falha se `.hero h1`, `.h1linha` ou `.pal` tiverem blur, opacidade < 1, transform/transition/animation ou `--p`; se o contentor voltar a esconder o h1; ou se o `main.js` voltar a escrever `--p`. `tests/mapa.test.js` confere que `iniciarHero` não toca no título | Substituem o teste do «piso de opacidade 0,62» e o do telemóvel. |
+
+### D55 — «Como chegar à JVI» no hero e em Contactos, com o estilo antigo (10B.3)
+
+O cliente gostou do botão antigo (`.btn-maps` de `a12bf1f`): pin do Google Maps
+vermelho, grande, numa faixa de 44 px por cima do texto.
+
+| Decisão | Razão |
+|---|---|
+| Botão no hero, a seguir a «Falar no WhatsApp» e «Pedir orçamento»; em Contactos o mesmo HTML (`btn btn--vidro btn-maps`), com o mesmo `href` (Plus Code 3H9C+VJ8, o de `linkDirecoes()`) | O `tests/rota.test.js` confere os dois, byte a byte. |
+| Cartão **branco com borda e sombra leve** (`--c-fundo`, `--borda-forte`), texto preto, pin `var(--maps)` | Em Contactos o vidro (3 % de preto) parecia só texto; branco com borda lê-se como botão no fundo escuro do hero e no claro de Contactos. Não é verde nem sólido de cor: continua secundário. |
+| `#EA4335` entra como o token `--maps`, declarado uma vez em `:root` | O teste `10.1: sem … cores do Google` proibia o literal; passou a admitir só essa declaração. A paleta não foi mexida. |
+| O percurso com setas continua só em Contactos (o hero não o ganha) | O hero tem de ficar curto (10.3). |
