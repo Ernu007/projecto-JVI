@@ -1118,7 +1118,32 @@ perspectiva e as costuras, e não tem halos. Não é perfeita: a palavra «JVI»
 um traço fino e um gradiente do próprio ficheiro do logótipo, por isso fica um
 pouco mais apagada que o símbolo, e uma foto de banco com marca composta não
 resiste a uma ampliação. O fundo continua a ser uma autoestrada de outro país
-(a matrícula e os rebites são os de um semirreboque norte-americano). Se o
+(é um semirreboque de tipo norte-americano). Se o
 cliente tiver uma fotografia de um camião da própria JVI, deve substituir esta
 com o mesmo nome. Para regenerar: descarregar a foto para `.tmp/fotos-camiao/`
 e correr `python tools/gerar-camiao.py`.
+
+### D60 — verificação final no browser (10B.8)
+
+Chrome headless via DevTools (`.tmp/cdp.mjs`), servidor estático local na porta
+8137, cache desligada, emulação de telemóvel (toque) a 360 e 390 px e de
+computador a 768 e 1440 px. Uma página, `index.html`.
+
+| | 360×800 | 390×844 | 768×1024 | 1440×900 |
+|---|---|---|---|---|
+| `scrollHeight` (px) | 7886 | 7775 | 6692 | 6568 |
+| `scrollWidth` (sem scroll horizontal) | 360 | 390 | 768 | 1440 |
+| Título do hero: opacidade / filtro / transform (cada `.pal`) | 1 / none / none | idem | idem | idem |
+| Menu → cada uma das 5 secções: título visível abaixo do cabeçalho | sim ×5 | sim ×5 | sim ×5 | sim ×5 |
+| `aria-current` só no item da secção para onde se foi | sim ×5 | sim ×5 | sim ×5 | sim ×5 |
+| Botões fixos (2) sobrepostos a conteúdo no fim da página | 0 | 0 | 0 | 0 |
+| Carrossel: 3 leituras com ~4,5 s de intervalo | 0→1→2 | 0→1→2 | 0→1→2 | 0→1→2 |
+| Erros de consola | 0 | 0 | 0 | 0 |
+
+- O título de cada secção fica a ~162 px do topo do ecrã com o cabeçalho a 60 px (as secções têm 40 px de padding próprio mais `scroll-margin-top: 64px`); o «Início» fica a 100 px (cabeçalho a 78 px antes de encolher).
+- O menu móvel abre, o clique fecha-o e faz scroll suave até à secção.
+- Carrossel (1440): com o rato por cima, parado 9 s (índice 0→0); ao sair, passa à seguinte ao fim de ~4 s (0→1); com a galeria fora do ecrã, parado 9 s. Com `prefers-reduced-motion: reduce` (390 px): parado 9 s na primeira.
+- Hero a 390 px: o mapa aparece já no primeiro ecrã, por baixo dos três botões (WhatsApp, orçamento, «Como chegar» com o pin vermelho).
+- A única `<img>` «partida» da página é o `src=""` da luzbox (fechada); é anterior à 10B e inofensivo.
+
+Fica por verificar: o **deslize com o dedo** e o **toque a segurar** só estão testados com eventos simulados nos testes unitários, não em dispositivo real; Safari/iOS e Firefox reais (só Chrome); a pausa por foco do teclado e as setas ← → foram testadas por simulação, não com Tab num browser; e o carrossel em ecrãs tácteis com `touch-action: pan-y` (o scroll vertical deve manter-se, mas não foi sentido na mão).
