@@ -4,60 +4,45 @@
    Espaçamento na escala de 4/8 px.
    ========================================================= */
 /* =========================================================
-   GALERIA — carrossel (Fase 8B, B7)
+   GALERIA — carrossel automático (Fase 10B, 10B.6)
    ------------------------------------------------------------
-   O cliente pediu "passar a carrossel: uma imagem de cada vez, cards
-   pequenos, a passar automaticamente. Ciclo contínuo."
+   Uma fotografia de cada vez, a passar sozinha (fade, ~4 s), em ciclo.
+   Sem setas e sem botão de pausa: o cliente não os quer. A pausa é por
+   gestos (rato, toque, foco, fora do ecrã, separador oculto) — ver
+   `iniciarCarrossel` em js/galeria.js e a decisão D58.
 
-   Era uma grelha de onze miniaturas, quatro por linha: quem chega ao
-   ecrã vê um mosaico e não um trabalho. O carrossel dá-lhe uma imagem
-   de cada vez, à escala do cartão, e passa sozinho.
-
-   `scroll-snap` faz o trabalho pesado: o JS só muda o `scrollLeft` e o
-   browser encaixa a fotografia no sítio com a animação do próprio
-   scroll. Sem isto, um `transform: translateX` por item obriga a
-   recalcular a distância em píxeis sempre que a janela muda de
-   largura — e o `resize` é o caminho por onde um carrossel costuma
-   partir-se.
+   As fotografias empilham-se no mesmo sítio e só se anima `opacity` e
+   `transform` (nada que force layout). A fotografia vai inteira
+   (`contain`) sobre ela própria desfocada, porque as do cliente têm
+   proporções muito diferentes (largas, 4:3 e de pé) e o recorte
+   cortava a carga.
    ========================================================= */
 .gal { margin-top: 48px; }
 .gal__grelha {
-  display: flex; gap: 16px;
-  overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  /* Sem barras de scroll: arrastar é óbvio, e a barra a meio de um
-     cartão de 400 px parece uma regra quebrada. */
-  scrollbar-width: none;
-  padding-bottom: 4px;
-}
-.gal__grelha::-webkit-scrollbar { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  .gal__grelha { scroll-behavior: auto; }
+  position: relative; overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--raio-sm); border: 1px solid var(--borda);
+  background: var(--base-3);
+  /* O deslize horizontal é nosso (swipe); o vertical continua a ser o scroll da página. */
+  touch-action: pan-y;
 }
 
 .gal__item {
-  position: relative; display: block; padding: 0; overflow: hidden;
-  /* Um item de cada vez: o cartão ocupa a largura toda do carrossel, e
-     quem dá o tamanho é o palco (`.gal__palco`). */
-  flex: 0 0 100%;
-  scroll-snap-align: start;
-  /* Um gesto, uma fotografia: sem isto, um gesto rápido com o dedo
-     atravessava três ou quatro de uma vez. */
-  scroll-snap-stop: always;
-  border-radius: var(--raio-sm); border: 1px solid var(--borda);
-  background: var(--base-3); cursor: zoom-in; aspect-ratio: 4 / 3;
+  position: absolute; inset: 0; display: block; width: 100%; padding: 0; overflow: hidden;
+  border: 0; background: transparent; cursor: zoom-in;
+  opacity: 0; transform: scale(1.04); pointer-events: none;
+  transition: opacity 0.9s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.gal__item[data-estado="ativo"] { opacity: 1; transform: none; pointer-events: auto; z-index: 1; }
 
-/* O palco: o carrossel com os controlos por baixo.
+/* O palco: o carrossel.
 
    Fase 9 (9.5): "aumente o tamanho das imagens do carrossel, está muito
-   pequeno!" Eram 520px, dos "cards pequenos" da Fase 8B. Continua a ser
-   uma fotografia de cada vez — mas grande: 860px no computador, com esse
-   máximo para não ficar gigante num ecrã largo. A altura sai dos 4:3 do
-   cartão, e a segunda declaração limita o palco pela altura do ecrã, para
-   a fotografia caber inteira num telemóvel deitado ou num portátil baixo
-   (quem não conhece `svh` fica com a primeira). */
+   pequeno!" — 860px no computador, com esse máximo para não ficar gigante
+   num ecrã largo. A altura sai dos 4:3 do cartão, e a segunda declaração
+   limita o palco pela altura do ecrã, para a fotografia caber inteira num
+   telemóvel deitado ou num portátil baixo (quem não conhece `svh` fica com
+   a primeira). */
 .gal__palco {
   max-width: 860px;
   max-width: min(860px, calc(78svh * 4 / 3));
@@ -69,32 +54,30 @@
 @media (max-width: 640px) {
   .gal__palco { margin-inline: -16px; }
 }
-.gal__grelha { position: relative; }
-.gal__controlos {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  margin-top: 14px;
-}
-.gal__ctl {
-  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--vidro); border: 1px solid var(--borda-forte);
-  color: var(--texto); transition: background var(--transicao);
-}
-.gal__ctl:hover { background: var(--borda); }
-.gal__ctl svg { width: 18px; height: 18px; }
-.gal__contador { min-width: 64px; text-align: center; font-size: 13px; font-weight: 600; color: var(--texto-suave); }
 
-.gal__item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.gal__item:hover img, .gal__item:focus-visible img { transform: scale(1.05); }
-/* A legenda fica sempre visível. Escondê-la até ao hover deixava
-   onze mosaicos sem rótulo nenhum no primeiro ecrã — e o nome
-   acessível vinha do alt, que é longo e muda a cada fotografia. */
-.gal__legenda {
-  position: absolute; inset: auto 0 0 0; padding: 40px 16px 16px;
-  background: linear-gradient(to top, rgba(5, 9, 18, 0.95) 40%, transparent);
-  font-size: 14px; font-weight: 600; color: var(--claro); text-align: left;
-  transition: opacity var(--transicao);
+/* Pontos indicadores: discretos, não clicáveis (não são botões). */
+.gal__pontos { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+.gal__pontos i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--texto-fraco);
+  opacity: 0.35; transform: scale(0.85);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
-.gal__item:hover .gal__legenda { opacity: 1; }
+.gal__pontos i[data-estado="ativo"] { opacity: 1; transform: scale(1.25); background: var(--verde); }
+
+.gal__fundo, .gal__foto { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gal__fundo { object-fit: cover; filter: blur(22px) saturate(1.1); transform: scale(1.2); opacity: 0.85; }
+.gal__foto { object-fit: contain; }
+/* A legenda fica sempre visível, no pé da fotografia. */
+.gal__legenda {
+  position: absolute; inset: auto 0 0 0; padding: 40px 16px 14px;
+  background: linear-gradient(to top, rgba(5, 9, 18, 0.9) 35%, transparent);
+  font-size: 14px; font-weight: 600; color: var(--claro); text-align: left;
+}
+.gal__item:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gal__item, .gal__pontos i { transition: none; transform: none; }
+}
 
 .gal__mais {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px;
