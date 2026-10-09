@@ -179,7 +179,10 @@ test('9.8: no telemóvel o mapa do hero sai de trás do texto', () => {
   const fundo = noTelemovel('.hero__fundo');
   assert.match(decl(fundo.corpo, 'position') ?? '', /^relative$/, 'o mapa continua por trás do texto no telemóvel');
   assert.ok(decl(fundo.corpo, 'height'), 'o mapa do hero não tem altura no telemóvel');
-  assert.ok(Number(decl(fundo.corpo, 'order')) > 0, 'o mapa não fica depois do conteúdo');
+  /* Fase 10C (10C.2): o mapa é a coluna da DIREITA, ao lado dos botões. */
+  assert.equal(decl(fundo.corpo, 'grid-column'), '2', 'o mapa deixou de ser a coluna da direita');
+  assert.equal(decl(corpo('.hero__acoes', fundo.bloco), 'grid-column'), '1', 'os botões deixaram de ser a coluna da esquerda');
+  assert.equal(decl(corpo('.hero__acoes', fundo.bloco), 'grid-row'), decl(fundo.corpo, 'grid-row'), 'botões e mapa não estão na mesma linha');
 
   /* O limite é o mesmo em que o `hero-voo.js` muda para o desenho de
      telemóvel (`w < 760`): um px de diferença punha o desenho de
@@ -245,4 +248,24 @@ test('10.5: os links legais do rodapé e o botão de fechar da privacidade chega
   assert.match(decl(links, 'display') ?? '', /flex/, 'sem display flex o min-height não se aplica a um link em linha');
   const fechar = corpo('.legal__fechar', CSS_PRIV);
   assert.ok(px(decl(fechar, 'width')) >= TOQUE && px(decl(fechar, 'height')) >= TOQUE, '.legal__fechar tem menos de 44 px');
+});
+
+/* ---------- Fase 10C (10C.2): hero em duas colunas e fixos ---------- */
+
+test('10C.2: o hero do telemóvel é uma grelha de duas colunas e o texto ocupa a largura toda', () => {
+  const m = mediaMaxComRegra('.hero', CSS);
+  assert.equal(m.limite, 899);
+  assert.match(m.corpo, /display:\s*grid/);
+  assert.match(m.corpo, /grid-template-columns:\s*minmax\(0,\s*[\d.]+fr\)\s*minmax\(0,\s*[\d.]+fr\)/);
+  assert.match(m.bloco, /\.hero__int,\s*\.hero__conteudo\s*\{\s*display:\s*contents/);
+  assert.match(m.bloco, /\.hero__conteudo h1,\s*\.hero__lead\s*\{\s*grid-column:\s*1\s*\/\s*-1/);
+  assert.ok(px(decl(/\.hero__acoes \.btn-maps\s*\{([^}]*)\}/.exec(m.bloco)?.[1] ?? '', 'min-height')) >= TOQUE, 'botões do hero abaixo de 44 px');
+});
+
+test('10C.2: os botões fixos escondem-se com o hero à vista, só no telemóvel', () => {
+  const js = fs.readFileSync(path.join('js', 'main.js'), 'utf8');
+  assert.match(js, /classList\.toggle\('fixos--sobre-hero'/);
+  const m = mediaMaxComRegra('.fixos--sobre-hero', CSS);
+  assert.ok(m && m.limite === 899, 'a regra dos fixos escondidos não é só do telemóvel');
+  assert.match(m.corpo, /visibility:\s*hidden/);
 });

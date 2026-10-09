@@ -114,6 +114,17 @@ function iniciarHero() {
 
   /* Fase 10B: o título não depende deste código — está visível desde o
      primeiro paint. Aqui só arranca o voo. */
+  /* Fase 10C: no telemóvel o mapa fica no canto de baixo do primeiro ecrã,
+     onde estão os botões fixos. Com o hero à vista os fixos escondem-se (o
+     hero tem o seu próprio WhatsApp) e voltam ao sair dele. O CSS só aplica
+     a classe abaixo de 900 px. */
+  const fixos = document.querySelector('.fixos');
+  if (fixos && 'IntersectionObserver' in window) {
+    new IntersectionObserver((e) => {
+      fixos.classList.toggle('fixos--sobre-hero', e[0].intersectionRatio >= 0.25);
+    }, { threshold: [0, 0.25] }).observe(hero);
+  }
+
   requestAnimationFrame(() => {
     try {
       iniciarVoo(canvas);

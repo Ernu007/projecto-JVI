@@ -1155,7 +1155,7 @@ Causa real no telemóvel do cliente: **não reproduzida** na emulação do Chrom
 
 | Hipótese | Resultado |
 |---|---|
-| Mapa abaixo da dobra e o voo só arranca com o `IntersectionObserver` | Corrigido em parte pelo 10C.2 (mapa no primeiro ecrã); o limiar baixou de 0,2 para 0,05, para arrancar logo que apareça uma nnesga do mapa. |
+| Mapa abaixo da dobra e o voo só arranca com o `IntersectionObserver` | Corrigido em parte pelo 10C.2 (mapa no primeiro ecrã); o limiar baixou de 0,2 para 0,05, para arrancar logo que apareça uma nesga do mapa. |
 | `prefers-reduced-motion` («Remover animações» do Android): avião parado à saída de Maputo, a tapar «Maputo — Sede» | **Provável causa.** O avião estático fica agora a meio do percurso entre Beira e Tete (salto Chimoio → Tete, t = 0,5, `aviaoParado`) e as etiquetas cedem-lhe o lugar (`etiquetasDoMapa(w, h, reservas)`). |
 | Avião de 15 px fixos | Passou a 10 % da largura do canvas, entre 16 e 24 px (`tamanhoDoAviao`). O 24 é o do computador. |
 | DPR 2,75/3 → canvas enorme | O limite a 2 já existia; ficou numa função (`dprDoCanvas`, `DPR_MAX`) e num teste. |
@@ -1164,3 +1164,11 @@ Causa real no telemóvel do cliente: **não reproduzida** na emulação do Chrom
 
 Caixa do avião para as etiquetas: ±1,5 × o tamanho (corpo, asas e sombra).
 Testes em `tests/aviao.test.js`.
+
+### D62 — hero em duas colunas no telemóvel (10C.2)
+
+- Abaixo de 900 px o `.hero` é uma grelha de duas colunas (`0,9fr | 1fr`, 10 px de intervalo): título e linha ocupam as duas; por baixo, **botões à esquerda, mapa à direita**. `.hero__int` e `.hero__conteudo` passam a `display: contents`. Decisão: título e subtítulo na largura toda (a 360 px o título tem 2 linhas, a 320 px 3).
+- Canvas medidos no browser (largura × altura): 142×275 (320 px), 163×310 (360), 181×338 (393), 343×440 (768). Testes de etiquetas e do avião correm nestes tamanhos.
+- Botões: altura 54 px (≥ 44), texto parte em duas linhas, pílula, ícone à esquerda.
+- Mapa estreito (< 260 px de canvas): só os nomes das cidades, sem os das províncias em maiúsculas (sobrepunham-se e «CABO DELGADO» saía do canvas). Uma etiqueta nunca sai do canvas: se a posição preferida sair, tenta a seguinte.
+- Botões fixos (WhatsApp + telefone): a 360×640 tapavam o canto do mapa. Com o hero à vista (≥ 25 %) escondem-se (`.fixos--sobre-hero`, só < 900 px); o hero tem o seu WhatsApp. Voltam ao sair do hero. No computador ficam como estavam.

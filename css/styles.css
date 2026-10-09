@@ -365,15 +365,37 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
    o secundário, por baixo, em contorno. */
 .hero__acoes { display: grid; gap: 12px; max-width: 380px; }
 
-/* No telemóvel o mapa sai de trás do texto: abaixo de 760px passa a ter a
-   sua caixa, em fluxo, por baixo do conteúdo. O limite é o do `w < 760` do
-   js/hero-voo.js — o teste confere que são o mesmo. */
+/* Fase 10C (10C.3): os três botões do hero têm a mesma altura (as linhas da
+   grelha são iguais: `1fr`), a mesma forma (pílula) e o mesmo padding. O
+   «Como chegar à JVI» deixou de ser um cartão com o pin em cima do texto:
+   pin vermelho à esquerda, como os ícones dos outros. Fica branco (o estilo
+   secundário de sempre), sem sombra, e nunca maior do que o WhatsApp. Só no
+   hero: o de Contactos fica como está (`.btn-maps`, mais acima). */
+
+/* Fase 10C (10C.2): no telemóvel o hero mantém o arranjo do computador. O
+   título e a linha ocupam a largura toda; por baixo, os botões ficam na
+   coluna da ESQUERDA e o mapa (Moçambique é alto e estreito) na da DIREITA,
+   lado a lado e no primeiro ecrã. `.hero__int` e `.hero__conteudo` passam a
+   `display: contents` para os filhos entrarem na grelha do hero. O limite é
+   o do `w < 900` do js/hero-voo.js — o teste confere que são o mesmo. */
 @media (max-width: 899px) {
-  .hero { flex-direction: column; align-items: stretch; padding: 100px 0 0; min-height: 0; }
-  .hero__lead { margin-bottom: 20px; }
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); column-gap: 10px;
+    align-items: center; align-content: start;
+    padding: 92px 20px 16px; min-height: 0;
+  }
+  .hero__int, .hero__conteudo { display: contents; }
+  .hero__conteudo h1, .hero__lead { grid-column: 1 / -1; }
+  .hero__lead { margin-bottom: 18px; }
+  .hero__acoes { grid-column: 1; grid-row: 3; max-width: none; gap: 10px; }
+  .hero__acoes .btn, .hero__acoes .btn--grande, .hero__acoes .btn-maps {
+    min-height: 52px; padding: 8px 12px; gap: 8px; font-size: 15px; line-height: 1.2;
+    white-space: normal; text-align: left; justify-content: flex-start;
+  }
+  .hero__acoes .btn svg, .hero__acoes .btn--grande svg { width: 20px; height: 20px; }
   /* O mapa (e o avião) têm de caber no primeiro ecrã: o voo só arranca com o
-     mapa à vista (IntersectionObserver), e a 360 x 800 isto põe-no em y 447-778. */
-  .hero__fundo { position: relative; inset: auto; order: 2; height: min(92vw, 380px); margin-top: 8px; }
+     mapa à vista (IntersectionObserver). */
+  .hero__fundo { position: relative; inset: auto; grid-column: 2; grid-row: 3; height: min(86vw, 440px); }
   .hero__glow::after { background: none; }
 }
 
@@ -580,6 +602,11 @@ a.cont-item:hover { border-color: var(--verde); background: rgb(var(--verde-rgb)
 .fixo--wa   .fixo__btn { background: var(--wa);           color: var(--sobre-wa); }
 .fixo--tel  .fixo__btn { background: var(--verde-marca);  color: #0B0B0C; }
 .fixo__btn:hover { transform: scale(1.08); }
+/* Fase 10C: no telemóvel os fixos escondem-se com o hero à vista (js/main.js). */
+@media (max-width: 899px) {
+  .fixos { transition: opacity 0.2s ease, visibility 0.2s; }
+  .fixos--sobre-hero { opacity: 0; visibility: hidden; }
+}
 
 /* =========================================================
    BARRA DE PROGRESSO E ENTRADA DO HERO

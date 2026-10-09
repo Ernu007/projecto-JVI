@@ -130,6 +130,7 @@ export function passoDoRelogio(ultimo, agora) {
    medida, para o teste e o desenho concordarem sem um canvas.
    ------------------------------------------------------------ */
 const ECRA_PEQUENO = 760;
+const MAPA_ESTREITO = 260;
 const FRAÇÃO_LARGURA_MAPA = 0.52;
 
 export function geometriaDoMapa(w, h) {
@@ -195,6 +196,8 @@ export function etiquetasDoMapa(w, h, reservas = []) {
       const ay = y + cand.dy(r, lh);
       const x0 = cand.alinha === 'left' ? ax : cand.alinha === 'right' ? ax - lw : ax - lw / 2;
       const caixa = { x0, y0: ay - lh / 2, x1: x0 + lw, y1: ay + lh / 2, tipo, nome, texto, x: ax, y: ay, alinha: cand.alinha };
+      // Fase 10C: uma etiqueta nunca sai do canvas (mapa estreito do telemóvel)
+      if (caixa.x0 < 0 || caixa.x1 > w || caixa.y0 < 0 || caixa.y1 > h) continue;
       if (!ocupado.some((o) => cruzam(caixa, o))) { escolhida = caixa; break; }
     }
     if (!escolhida) return null;
@@ -222,8 +225,10 @@ export function etiquetasDoMapa(w, h, reservas = []) {
     // Fase 10B (10B.4): a sede diz-se no mapa, como no mapa antigo («Maputo — Sede»).
     colocar('cidade', nome, nome === 'Maputo' ? ROTULO_SEDE : c.nome, tamCidade, false, c, todas);
   }
-  // 2.º os nomes das províncias, só quando dizem algo que a cidade não diz
-  for (const nome of ROTA) {
+  // 2.º os nomes das províncias, só quando dizem algo que a cidade não diz.
+  // Fase 10C: no mapa estreito (coluna do telemóvel) ficam só as cidades —
+  // os nomes das províncias em maiúsculas sobrepunham-se e saíam do canvas.
+  if (w >= MAPA_ESTREITO) for (const nome of ROTA) {
     const c = CAPITAIS[nome];
     if (!c || c.nome.toLowerCase() === nome.toLowerCase()) continue;
     colocar('provincia', nome, nome.toUpperCase(), tamProv, true, c, [acima, maisAcima, maisAbaixo, ...todas]);
