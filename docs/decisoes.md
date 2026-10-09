@@ -957,3 +957,45 @@ elementos tapados vazia nas 5 páginas × 2 larguras); `scrollWidth` igual à
 largura do ecrã (sem scroll horizontal). A meio da página os botões são
 fixos e passam por cima do que estiver por baixo, como qualquer botão
 flutuante — o que não podem é tapar o fim da página, e não tapam.
+
+### D51 — etiquetas do mapa sem sobreposição (10.7)
+
+| Decisão | Razão |
+|---|---|
+| `etiquetasDoMapa(w, h)` e `geometriaDoMapa(w, h)` em `js/hero-voo.js`: funções puras que o desenho e o teste partilham | A 360 px "MANICA" caía sobre "SOFALA" e "Chimoio" sobre "Beira" (a 1,2 unidades uma da outra). Os `fillText` passaram a ler a posição calculada em vez de `y − 9` / `y + raio + 9` fixos. |
+| O nome da província **não se escreve** quando a cidade tem o mesmo nome (Nampula, Tete, Inhambane, Maputo) | A cidade já o diz; eram quatro pares de texto sobrepostos. |
+| Cada etiqueta tenta posições por ordem (em baixo, esquerda, direita, cantos, em cima, mais afastada) e fica na primeira que não toca noutra etiqueta nem num ponto de agência. Cidades primeiro, depois províncias | Desloca em vez de esconder: continuam todas as dez cidades e seis províncias. |
+| Abaixo de 760 px de largura os tamanhos descem um ponto (cidades 9→8 px, províncias 10→9 px) | Mais folga no mapa estreito. |
+| A largura do texto é **estimada** (`larguraEstimada`, conservadora) e não medida | O teste corre em Node sem canvas e tem de concordar com o desenho. |
+
+`tests/etiquetas.test.js` calcula as caixas a 320×700, 360×800, 360×420 (canvas
+real do mapa no telemóvel), 390×844, 768×900 e 1440×900 e falha se duas se
+intersectarem, se uma tapar um ponto de agência, se faltar uma cidade ou se
+sair do canvas. Visto no Chrome a 360 px: sem sobreposições.
+
+### D52 — verificação final no browser (10.8)
+
+Chrome headless via DevTools, servidor local, cache desligada, 5 páginas × 5
+larguras. Alturas de scroll (`scrollHeight`, px) e botões fixos (2 × 48 px,
+canto inferior direito):
+
+| Página | 320×700 | 360×800 | 390×844 | 768×1024 | 1440×900 |
+|---|---|---|---|---|---|
+| index | 1690 | 1667 | 1668 | 1394 | 1313 |
+| servicos | 2400 | 2302 | 2307 | 1656 | 1718 |
+| sobre | 2288 | 2245 | 2182 | 2073 | 2142 |
+| orcamento | 2492 | 2387 | 2334 | 1863 | 1994 |
+| contactos | 1517 | 1459 | 1459 | 1221 | 1130 |
+
+(Em ecrãs de scroll: 1,2 a 3,6 alturas de ecrã; a mais longa é o orçamento a
+320 px, 3,56.)
+
+- `scrollWidth` = largura do ecrã nas 25 combinações: **sem scroll horizontal**.
+- Botões fixos nas posições esperadas (p. ex. 360×800: y 740–788; 320×700: y 640–688).
+- No fim do scroll **nenhum elemento de conteúdo** (`main`, `footer`, `header`) intersecta os botões, nas 25 combinações.
+- «Como chegar à JVI» (Contactos): centrado no ecrã não é tapado e, varrendo o scroll ±400 px em passos de 40 px, **0 posições** em que fique sob os botões, a 320, 360, 390, 768 e 1440 px.
+- Zero erros de consola nas 25 páginas.
+
+Fica por verificar: Safari/iOS e Firefox reais (só Chrome), e toque real em
+dispositivo; o teste do mapa estima larguras de texto, não as mede com a fonte
+carregada (a margem é conservadora, e a 360 px confirmou-se a olho).
