@@ -371,6 +371,13 @@ main:focus-visible { outline: 3px solid var(--verde); outline-offset: -3px; }
    pin vermelho à esquerda, como os ícones dos outros. Fica branco (o estilo
    secundário de sempre), sem sombra, e nunca maior do que o WhatsApp. Só no
    hero: o de Contactos fica como está (`.btn-maps`, mais acima). */
+.hero__acoes { grid-auto-rows: 1fr; }
+.hero__acoes .btn { padding-block: 16px; }
+.hero__acoes .btn-maps {
+  flex-direction: row; gap: 10px; width: auto; padding: 16px 28px;
+  border-radius: 100px; box-shadow: none;
+}
+.hero__acoes .btn-maps svg { width: 19px; height: 19px; }
 
 /* Fase 10C (10C.2): no telemóvel o hero mantém o arranjo do computador. O
    título e a linha ocupam a largura toda; por baixo, os botões ficam na

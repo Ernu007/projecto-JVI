@@ -1172,3 +1172,9 @@ Testes em `tests/aviao.test.js`.
 - Botões: altura 54 px (≥ 44), texto parte em duas linhas, pílula, ícone à esquerda.
 - Mapa estreito (< 260 px de canvas): só os nomes das cidades, sem os das províncias em maiúsculas (sobrepunham-se e «CABO DELGADO» saía do canvas). Uma etiqueta nunca sai do canvas: se a posição preferida sair, tenta a seguinte.
 - Botões fixos (WhatsApp + telefone): a 360×640 tapavam o canto do mapa. Com o hero à vista (≥ 25 %) escondem-se (`.fixos--sobre-hero`, só < 900 px); o hero tem o seu WhatsApp. Voltam ao sair do hero. No computador ficam como estavam.
+
+### D63 — «Como chegar à JVI» do hero (10C.3)
+
+- Pílula (`border-radius: 100px`), mesmo padding do `.btn` (16 px 28 px), pin vermelho `#EA4335` de 19 px à esquerda do texto, como os ícones dos outros dois. Fundo **branco** (o estilo secundário que já tinha; decisão: mantém a identidade do Maps e destaca-se do WhatsApp verde e do orçamento escuro sem ser maior), sem sombra.
+- Altura igual nos três: `.hero__acoes { grid-auto-rows: 1fr }` — as linhas têm a altura do mais alto. Medido no Chrome: 360 px → 54 / 54 / 54 px; 1440 px → 60 / 60 / 60 px. O WhatsApp já não é maior do que os outros no computador (era 61 contra 53).
+- O botão de Contactos não foi tocado (`.btn-maps` base, cartão com o pin em cima).

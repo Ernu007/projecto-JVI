@@ -269,3 +269,22 @@ test('10C.2: os botões fixos escondem-se com o hero à vista, só no telemóvel
   assert.ok(m && m.limite === 899, 'a regra dos fixos escondidos não é só do telemóvel');
   assert.match(m.corpo, /visibility:\s*hidden/);
 });
+
+/* ---------- Fase 10C (10C.3): «Como chegar» do hero igual aos outros ---------- */
+
+test('10C.3: «Como chegar» do hero é uma pílula do tamanho dos outros, com o pin vermelho à esquerda', () => {
+  const hero = /\.hero__acoes \.btn-maps\s*\{([^}]*)\}/.exec(CSS)?.[1] ?? '';
+  assert.match(hero, /flex-direction:\s*row/, 'o pin voltou a ficar por cima do texto');
+  assert.match(hero, /border-radius:\s*100px/, 'deixou de ser uma pílula');
+  assert.match(hero, /padding:\s*16px 28px/, 'o padding não é o do `.btn`');
+  assert.match(CSS, /\.btn\s*\{[^}]*padding:\s*16px 28px/, 'o `.btn` mudou de padding: rever o «Como chegar»');
+  const svg = /\.hero__acoes \.btn-maps svg\s*\{([^}]*)\}/.exec(CSS)?.[1] ?? '';
+  assert.equal(px(decl(svg, 'height')), 19, 'o pin não tem o tamanho dos ícones dos outros botões');
+  /* A mesma altura nos três: as linhas da grelha são iguais (`1fr`). */
+  assert.match(/\.hero__acoes\s*\{\s*grid-auto-rows:\s*1fr/.exec(CSS)?.[0] ?? '', /1fr/, 'as linhas dos botões do hero não são iguais');
+  /* O pin é o primeiro filho (à esquerda do texto) e continua a ser o vermelho do Maps. */
+  assert.match(HTML, /class="btn btn--vidro btn-maps"[^>]*><svg[\s\S]*?<\/svg>\s*Como chegar à JVI/);
+  assert.match(CSS, /\.btn-maps svg \{[^}]*color:\s*var\(--maps\)/);
+  /* O de Contactos fica como está: cartão com o pin grande em cima. */
+  assert.match(/\.btn-maps\s*\{([^}]*)\}/.exec(CSS)?.[1] ?? '', /flex-direction:\s*column/);
+});
